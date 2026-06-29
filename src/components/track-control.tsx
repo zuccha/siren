@@ -39,25 +39,17 @@ export default function TrackControl({
       <Grid
         alignItems="center"
         gap={3}
-        templateColumns={{
-          base: "auto minmax(5rem, 1fr) auto",
-          md: "auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto",
-        }}
+        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
       >
         <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
           <Icon size={18} />
         </Flex>
 
-        <Heading as="h3" fontWeight={isPlaying ? "semibold" : "medium"} minW={0} size="sm">
+        <Heading fontWeight={isPlaying ? "semibold" : "medium"} minW={0} size="sm">
           {track.name}
         </Heading>
 
-        <VolumeControl
-          display={{ base: "none", md: "flex" }}
-          track={track}
-          volume={volume}
-          onVolumeChange={onVolumeChange}
-        />
+        <VolumeControl track={track} volume={volume} onVolumeChange={onVolumeChange} />
 
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
@@ -69,14 +61,6 @@ export default function TrackControl({
           <PlayStateIcon size={14} />
           {isPlaying ? "Stop" : "Play"}
         </Button>
-
-        <VolumeControl
-          display={{ base: "flex", md: "none" }}
-          gridColumn="1 / -1"
-          track={track}
-          volume={volume}
-          onVolumeChange={onVolumeChange}
-        />
       </Grid>
     </Box>
   );

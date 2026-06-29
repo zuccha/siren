@@ -8,7 +8,6 @@ import type { Track } from "~/sound/tracks";
 //------------------------------------------------------------------------------
 
 type VolumeControlProps = {
-  display: { base: string; md: string };
   gridColumn?: string;
   track: Track;
   volume: number;
@@ -16,14 +15,13 @@ type VolumeControlProps = {
 };
 
 export default function VolumeControl({
-  display,
   gridColumn,
   track,
   volume,
   onVolumeChange,
 }: VolumeControlProps) {
   return (
-    <HStack display={display} gap={2} gridColumn={gridColumn}>
+    <HStack gap={2} gridColumn={gridColumn}>
       <Volume2Icon size={15} />
       <input
         aria-label={`${track.name} volume`}
