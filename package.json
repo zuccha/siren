@@ -8,13 +8,13 @@
     "build": "tsc -b && vite build",
     "format": "oxfmt ./src",
     "format:check": "oxfmt --check ./src",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "preview": "vite preview",
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,cjs,mjs,jsx,ts,tsx,json,css,md}": "oxfmt",
-    "*.{js,cjs,mjs,jsx,ts,tsx}": "oxlint --fix"
+    "*.{js,cjs,mjs,jsx,ts,tsx,json,css,md}": "oxfmt --check",
+    "*.{js,cjs,mjs,jsx,ts,tsx}": "oxlint --fix --deny-warnings"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.36.0",
