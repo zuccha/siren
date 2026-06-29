@@ -9,7 +9,10 @@ export type ActiveSound = {
   output: GainNode;
   nodes: AudioNode[];
   sources: Array<AudioBufferSourceNode | OscillatorNode>;
+  stopTimerId?: number;
 };
+
+export const musicFadeDuration = 1.8;
 
 //------------------------------------------------------------------------------
 // Create Noise Buffer
@@ -73,10 +76,15 @@ function startNoise(context: AudioContext, output: AudioNode, seconds = 2) {
 // Create Sound
 //------------------------------------------------------------------------------
 
-export function createSound(track: Track, volume: number): ActiveSound {
+export function createSound(
+  track: Track,
+  volume: number,
+  options: { fadeIn?: boolean } = {},
+): ActiveSound {
   const context = new AudioContext();
   const output = context.createGain();
-  output.gain.value = volume / 100;
+  const targetGain = volume / 100;
+  output.gain.value = options.fadeIn ? 0 : targetGain;
   output.connect(context.destination);
 
   const nodes: AudioNode[] = [output];
@@ -146,6 +154,10 @@ export function createSound(track: Track, volume: number): ActiveSound {
     nodes.push(chirpGain);
   }
 
+  if (options.fadeIn) {
+    fadeGainTo(output, targetGain, musicFadeDuration);
+  }
+
   return { context, output, nodes, sources };
 }
 
@@ -154,6 +166,10 @@ export function createSound(track: Track, volume: number): ActiveSound {
 //------------------------------------------------------------------------------
 
 export function stopSound(sound: ActiveSound) {
+  if (sound.stopTimerId) {
+    window.clearTimeout(sound.stopTimerId);
+  }
+
   for (const source of sound.sources) {
     source.stop();
     source.disconnect();
@@ -164,4 +180,35 @@ export function stopSound(sound: ActiveSound) {
   }
 
   void sound.context.close();
+}
+
+//------------------------------------------------------------------------------
+// Fade Sound To
+//------------------------------------------------------------------------------
+
+export function fadeSoundTo(sound: ActiveSound, volume: number, duration = musicFadeDuration) {
+  fadeGainTo(sound.output, volume / 100, duration);
+}
+
+//------------------------------------------------------------------------------
+// Fade Out And Stop
+//------------------------------------------------------------------------------
+
+export function fadeOutAndStop(sound: ActiveSound, duration = musicFadeDuration) {
+  fadeGainTo(sound.output, 0, duration);
+
+  sound.stopTimerId = window.setTimeout(() => {
+    stopSound(sound);
+  }, duration * 1000);
+}
+
+//------------------------------------------------------------------------------
+// Fade Gain To
+//------------------------------------------------------------------------------
+
+function fadeGainTo(output: GainNode, gain: number, duration: number) {
+  const now = output.context.currentTime;
+  output.gain.cancelScheduledValues(now);
+  output.gain.setValueAtTime(output.gain.value, now);
+  output.gain.linearRampToValueAtTime(gain, now + duration);
 }

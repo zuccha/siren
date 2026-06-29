@@ -2,7 +2,7 @@ import { Box, Container, Flex, Grid, Heading } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TrackSection from "~/components/track-section";
-import { type ActiveSound, createSound, stopSound } from "~/sound/audio";
+import { type ActiveSound, createSound, fadeOutAndStop, stopSound } from "~/sound/audio";
 import { type Track, ambienceTracks, environmentTracks, tracks } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
 
@@ -20,21 +20,31 @@ function App() {
 
   const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), []);
 
-  const stopTrack = useCallback((trackId: string) => {
-    const sound = activeSounds.current.get(trackId);
+  const stopTrack = useCallback(
+    (trackId: string) => {
+      const sound = activeSounds.current.get(trackId);
 
-    if (!sound) {
-      return;
-    }
+      if (!sound) {
+        return;
+      }
 
-    stopSound(sound);
-    activeSounds.current.delete(trackId);
-    setPlayingIds((previous) => {
-      const next = new Set(previous);
-      next.delete(trackId);
-      return next;
-    });
-  }, []);
+      const track = trackById.get(trackId);
+
+      if (track?.kind === "ambience") {
+        fadeOutAndStop(sound);
+      } else {
+        stopSound(sound);
+      }
+
+      activeSounds.current.delete(trackId);
+      setPlayingIds((previous) => {
+        const next = new Set(previous);
+        next.delete(trackId);
+        return next;
+      });
+    },
+    [trackById],
+  );
 
   const startTrack = useCallback(
     (track: Track) => {
@@ -48,7 +58,9 @@ function App() {
         }
       }
 
-      const sound = createSound(track, volumes[track.id] ?? track.initialVolume);
+      const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
+        fadeIn: track.kind === "ambience",
+      });
       activeSounds.current.set(track.id, sound);
       setPlayingIds((previous) => new Set(previous).add(track.id));
     },
