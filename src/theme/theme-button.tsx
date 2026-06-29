@@ -19,10 +19,10 @@ export default function ThemeButton() {
   return (
     <IconButton
       Icon={theme === "dark" ? MoonIcon : SunIcon}
-      aria-label={"Toggle theme"}
+      aria-label="Toggle theme"
       onClick={toggleTheme}
       size="sm"
-      variant="ghost"
+      variant="subtle"
     />
   );
 }
