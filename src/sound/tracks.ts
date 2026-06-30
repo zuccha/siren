@@ -7,6 +7,12 @@ import { dynamicIconImports, type IconName } from "lucide-react/dynamic";
 export type TrackKind = "ambience" | "environment";
 
 //------------------------------------------------------------------------------
+// Track Drop Position
+//------------------------------------------------------------------------------
+
+export type TrackDropPosition = "after" | "before";
+
+//------------------------------------------------------------------------------
 // Track Icon
 //------------------------------------------------------------------------------
 

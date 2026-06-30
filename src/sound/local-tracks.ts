@@ -104,6 +104,20 @@ export function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
 }
 
 //------------------------------------------------------------------------------
+// Reorder Local Tracks
+//------------------------------------------------------------------------------
+
+export function reorderLocalTracks(kind: TrackKind, trackIds: string[]) {
+  const metadata = loadLocalTrackMetadata();
+  const metadataById = new Map(metadata.map((item) => [item.id, item]));
+  const reorderedMetadata = trackIds
+    .map((trackId) => metadataById.get(trackId))
+    .filter((item): item is LocalTrackMetadata => item !== undefined && item.kind === kind);
+
+  saveLocalTrackMetadata([...metadata.filter((item) => item.kind !== kind), ...reorderedMetadata]);
+}
+
+//------------------------------------------------------------------------------
 // Delete Local Track
 //------------------------------------------------------------------------------
 

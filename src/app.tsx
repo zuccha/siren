@@ -14,10 +14,11 @@ import {
   type LocalTrackUpdateInput,
   deleteLocalTrack,
   loadLocalTracks,
+  reorderLocalTracks,
   saveLocalTrack,
   updateLocalTrack,
 } from "~/sound/local-tracks";
-import { type Track } from "~/sound/tracks";
+import { type Track, type TrackDropPosition } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
 import EditModeSwitch from "~/ui/edit-mode-switch";
 
@@ -32,6 +33,32 @@ type TrackLibrary = {
 };
 
 const emptyTracks: Track[] = [];
+
+//------------------------------------------------------------------------------
+// Reorder Track List
+//------------------------------------------------------------------------------
+
+function reorderTrackList(
+  tracks: Track[],
+  sourceId: string,
+  targetId: string,
+  position: TrackDropPosition,
+) {
+  const sourceIndex = tracks.findIndex((track) => track.id === sourceId);
+  const targetIndex = tracks.findIndex((track) => track.id === targetId);
+
+  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return tracks;
+
+  const nextTracks = [...tracks];
+  const [movedTrack] = nextTracks.splice(sourceIndex, 1);
+  if (!movedTrack) return tracks;
+
+  const adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+  const insertIndex = position === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
+  nextTracks.splice(insertIndex, 0, movedTrack);
+
+  return nextTracks;
+}
 
 //------------------------------------------------------------------------------
 // App
@@ -176,6 +203,33 @@ function App() {
     [setTrackVolume, updateTrackLibrary],
   );
 
+  const reorderTracks = useCallback(
+    (kind: Track["kind"], sourceId: string, targetId: string, position: TrackDropPosition) => {
+      updateTrackLibrary((previous) => {
+        const ambienceTracks =
+          kind === "ambience"
+            ? reorderTrackList(previous.ambienceTracks, sourceId, targetId, position)
+            : previous.ambienceTracks;
+        const environmentTracks =
+          kind === "environment"
+            ? reorderTrackList(previous.environmentTracks, sourceId, targetId, position)
+            : previous.environmentTracks;
+
+        reorderLocalTracks(
+          kind,
+          (kind === "ambience" ? ambienceTracks : environmentTracks).map((track) => track.id),
+        );
+
+        return {
+          ambienceTracks,
+          environmentTracks,
+          tracks: [...ambienceTracks, ...environmentTracks],
+        };
+      });
+    },
+    [updateTrackLibrary],
+  );
+
   const removeTrack = useCallback(
     (track: Track) => {
       stopTrack(track.id);
@@ -237,6 +291,7 @@ function App() {
               volumes={volumes}
               onEdit={editTrack}
               onRemove={removeTrack}
+              onReorder={reorderTracks}
               onToggle={toggleTrack}
               onUpload={addLocalTrack}
               onVolumeChange={setTrackVolume}
@@ -251,6 +306,7 @@ function App() {
               volumes={volumes}
               onEdit={editTrack}
               onRemove={removeTrack}
+              onReorder={reorderTracks}
               onToggle={toggleTrack}
               onUpload={addLocalTrack}
               onVolumeChange={setTrackVolume}

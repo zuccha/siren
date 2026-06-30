@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Grid, Heading, Input } from "@chakra-ui/react";
-import { PauseIcon, PlayIcon, XIcon } from "lucide-react";
+import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type DragEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
@@ -16,8 +16,13 @@ import VolumeControl from "./volume-control";
 type TrackControlProps = {
   track: Track;
   isEditing: boolean;
+  isDragging: boolean;
   isPlaying: boolean;
   volume: number;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent) => void;
+  onDragStart: (event: DragEvent) => void;
+  onDrop: (event: DragEvent) => void;
   onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
   onRemove: (track: Track) => void;
   onToggle: (track: Track) => void;
@@ -27,8 +32,13 @@ type TrackControlProps = {
 export default function TrackControl({
   track,
   isEditing,
+  isDragging,
   isPlaying,
   volume,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
   onEdit,
   onRemove,
   onToggle,
@@ -77,6 +87,9 @@ export default function TrackControl({
       bg="bg.panel"
       borderColor={isPlaying ? "fg" : "border"}
       borderWidth="1px"
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      opacity={isDragging ? 0.55 : 1}
       position="relative"
       px={3}
       py={2}
@@ -105,9 +118,29 @@ export default function TrackControl({
         gap={3}
         templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
       >
-        <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
-          <DynamicIcon name={track.icon} size={18} />
-        </Flex>
+        {isEditing ? (
+          <Button
+            aria-label={`Drag ${track.name}`}
+            color="fg.muted"
+            cursor="grab"
+            draggable
+            h={8}
+            minW={8}
+            onDragEnd={onDragEnd}
+            onDragStart={onDragStart}
+            p={0}
+            size="xs"
+            variant="plain"
+            w={8}
+            _active={{ cursor: "grabbing" }}
+          >
+            <GripVerticalIcon size={18} />
+          </Button>
+        ) : (
+          <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
+            <DynamicIcon name={track.icon} size={18} />
+          </Flex>
+        )}
 
         {isEditing ? (
           <Grid gap={2} minW={0} templateColumns="minmax(7rem, 1fr) minmax(5rem, 8rem)">
