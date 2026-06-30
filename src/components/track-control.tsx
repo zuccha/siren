@@ -7,6 +7,7 @@ import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import IconButton from "~/ui/icon-button";
 
+import TrackIconPicker from "./track-icon-picker";
 import VolumeControl from "./volume-control";
 
 //------------------------------------------------------------------------------
@@ -82,6 +83,19 @@ export default function TrackControl({
     });
   };
 
+  //------------------------------------------------------------------------------
+  // Edit Track Icon
+  //------------------------------------------------------------------------------
+
+  const editTrackIcon = (icon: string) => {
+    setDraftIcon(icon);
+    onEdit(track, {
+      name: draftName,
+      icon,
+      initialVolume: volume,
+    });
+  };
+
   return (
     <Box
       bg="bg.panel"
@@ -115,7 +129,7 @@ export default function TrackControl({
 
       <Grid
         alignItems="center"
-        gap={3}
+        gap={2}
         templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
       >
         {isEditing ? (
@@ -124,14 +138,12 @@ export default function TrackControl({
             color="fg.muted"
             cursor="grab"
             draggable
-            h={8}
-            minW={8}
+            mx={-2}
             onDragEnd={onDragEnd}
             onDragStart={onDragStart}
             p={0}
             size="xs"
             variant="plain"
-            w={8}
             _active={{ cursor: "grabbing" }}
           >
             <GripVerticalIcon size={18} />
@@ -143,20 +155,18 @@ export default function TrackControl({
         )}
 
         {isEditing ? (
-          <Grid gap={2} minW={0} templateColumns="minmax(7rem, 1fr) minmax(5rem, 8rem)">
+          <Grid gap={2} minW={0} templateColumns="auto minmax(7rem, 1fr)">
+            <TrackIconPicker
+              label={`${track.name} icon`}
+              value={draftIcon}
+              onIconChange={editTrackIcon}
+            />
             <Input
               aria-label={`${track.name} name`}
               onBlur={commitTrackEdits}
               onChange={(event) => setDraftName(event.currentTarget.value)}
               size="xs"
               value={draftName}
-            />
-            <Input
-              aria-label={`${track.name} icon`}
-              onBlur={commitTrackEdits}
-              onChange={(event) => setDraftIcon(event.currentTarget.value)}
-              size="xs"
-              value={draftIcon}
             />
           </Grid>
         ) : (

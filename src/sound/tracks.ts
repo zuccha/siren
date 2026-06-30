@@ -72,7 +72,7 @@ function getTrackIcon(icon: string, fallbackIcon: string) {
 // Resolve Track Icon
 //------------------------------------------------------------------------------
 
-function resolveTrackIcon(icon: string) {
+export function resolveTrackIcon(icon: string) {
   const normalizedIcon = normalizeTrackIconName(icon);
   return findIconName(normalizedIcon);
 }
