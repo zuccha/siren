@@ -91,9 +91,7 @@ export default function DeletePlaylistButton({
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline">Cancel</Button>
                 </Dialog.ActionTrigger>
-                <Button colorPalette="red" onClick={removePlaylist}>
-                  Delete
-                </Button>
+                <Button onClick={removePlaylist}>Delete</Button>
               </Dialog.Footer>
             </Dialog.Content>
           </Dialog.Positioner>

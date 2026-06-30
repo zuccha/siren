@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import EmptyPlaylistState from "~/components/empty-playlist-state";
 import PlaylistManager from "~/components/playlist-manager";
+import TrackLibraryDrawer from "~/components/track-library-drawer";
 import TrackSection from "~/components/track-section";
 import useTrackMixer from "~/hooks/use-track-mixer";
 import type { Track, TrackKind } from "~/sound/tracks";
@@ -37,6 +38,7 @@ function App() {
             </Heading>
           </Box>
           <HStack gap={3}>
+            <TrackLibraryDrawer tracks={mixer.tracks} onDeleteTrack={mixer.deleteTrack} />
             <EditModeSwitch isEditing={isEditing} onEditingChange={setIsEditing} />
             <ThemeButton />
           </HStack>

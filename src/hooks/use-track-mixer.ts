@@ -12,6 +12,7 @@ import {
   type LocalTrackUpdateInput,
   addLocalPlaylistTrack,
   deleteLocalPlaylist,
+  deleteLocalTrack,
   loadLocalTrackLibrary,
   removeLocalPlaylistTrack,
   reorderLocalPlaylistTracks,
@@ -365,6 +366,37 @@ export default function useTrackMixer() {
   );
 
   //------------------------------------------------------------------------------
+  // Delete Track
+  //------------------------------------------------------------------------------
+
+  const deleteTrack = useCallback(
+    async (track: Track) => {
+      stopTrack(track.id);
+      await deleteLocalTrack(track.id);
+
+      updateLibrary((previous) => ({
+        playlists: previous.playlists.map((playlist) =>
+          setPlaylistTrackIds(
+            setPlaylistTrackIds(
+              playlist,
+              "ambience",
+              playlist.ambienceTrackIds.filter((trackId) => trackId !== track.id),
+            ),
+            "environment",
+            playlist.environmentTrackIds.filter((trackId) => trackId !== track.id),
+          ),
+        ),
+        tracks: previous.tracks.filter((item) => item.id !== track.id),
+      }));
+      setVolumes((previous) => {
+        const { [track.id]: _deletedVolume, ...nextVolumes } = previous;
+        return nextVolumes;
+      });
+    },
+    [stopTrack, updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
   // Reorder Tracks
   //------------------------------------------------------------------------------
 
@@ -403,6 +435,7 @@ export default function useTrackMixer() {
     addLocalTrack,
     addPlaylist,
     addTrackToPlaylist,
+    deleteTrack,
     editTrack,
     isLoaded: library !== undefined,
     playlists,
