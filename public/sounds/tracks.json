@@ -1,25 +1,102 @@
 {
   "ambience": [
     {
+      "id": "action-1",
+      "name": "Action 1",
+      "src": "/sounds/ambience/action-1.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "action-2",
+      "name": "Action 2",
+      "src": "/sounds/ambience/action-2.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "tribal",
+      "name": "Tribal",
+      "src": "/sounds/ambience/tribal.mp3",
+      "icon": "drums",
+      "initialVolume": 50
+    },
+    {
+      "id": "combat-slow",
+      "name": "Combat - Slow",
+      "src": "/sounds/ambience/combat-slow.mp3",
+      "icon": "swords",
+      "initialVolume": 50
+    },
+    {
+      "id": "combat-fast",
+      "name": "Combat - Fast",
+      "src": "/sounds/ambience/combat-fast.mp3",
+      "icon": "swords",
+      "initialVolume": 50
+    },
+    {
+      "id": "boss-fight-epic",
+      "name": "Boss Fight - Epic",
+      "src": "/sounds/ambience/boss-fight-epic.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "boss-fight-desperate",
+      "name": "Boss Fight - Desperate",
+      "src": "/sounds/ambience/boss-fight-desperate.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
       "id": "calm",
       "name": "Calm",
       "src": "/sounds/ambience/calm.mp3",
       "icon": "music",
-      "initialVolume": 52
+      "initialVolume": 50
     },
     {
-      "id": "action",
-      "name": "Action",
-      "src": "/sounds/ambience/action.mp3",
-      "icon": "flame",
-      "initialVolume": 48
+      "id": "jolly",
+      "name": "Jolly",
+      "src": "/sounds/ambience/jolly.mp3",
+      "icon": "music",
+      "initialVolume": 50
     },
     {
-      "id": "combat",
-      "name": "Combat",
-      "src": "/sounds/ambience/combat.mp3",
-      "icon": "swords",
-      "initialVolume": 46
+      "id": "sad",
+      "name": "Sad",
+      "src": "/sounds/ambience/sad.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "eerie",
+      "name": "Eerie",
+      "src": "/sounds/ambience/eerie.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "intrigue",
+      "name": "Intrigue",
+      "src": "/sounds/ambience/intrigue.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "sacred",
+      "name": "Sacred",
+      "src": "/sounds/ambience/sacred.mp3",
+      "icon": "music",
+      "initialVolume": 50
+    },
+    {
+      "id": "mystic",
+      "name": "Mystic",
+      "src": "/sounds/ambience/mystic.mp3",
+      "icon": "music",
+      "initialVolume": 50
     }
   ],
   "environment": [

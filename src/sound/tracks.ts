@@ -1,6 +1,8 @@
 import {
   CloudRainIcon,
+  DrumIcon,
   FlameIcon,
+  GhostIcon,
   MusicIcon,
   SwordsIcon,
   TreesIcon,
@@ -18,7 +20,15 @@ export type TrackKind = "ambience" | "environment";
 // Track Icon
 //------------------------------------------------------------------------------
 
-export type TrackIcon = "music" | "flame" | "swords" | "rain" | "wind" | "trees";
+export type TrackIcon =
+  | "drums"
+  | "flame"
+  | "ghost"
+  | "music"
+  | "rain"
+  | "swords"
+  | "trees"
+  | "wind";
 
 //------------------------------------------------------------------------------
 // Track
@@ -55,7 +65,9 @@ type TrackManifestItem = {
 };
 
 const iconByName: Record<TrackIcon, LucideIcon> = {
+  drums: DrumIcon,
   flame: FlameIcon,
+  ghost: GhostIcon,
   music: MusicIcon,
   rain: CloudRainIcon,
   swords: SwordsIcon,
