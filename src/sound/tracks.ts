@@ -26,19 +26,10 @@ export type Track = {
 };
 
 //------------------------------------------------------------------------------
-// Track Manifest
-//------------------------------------------------------------------------------
-
-export type TrackManifest = {
-  ambience: TrackManifestItem[];
-  environment: TrackManifestItem[];
-};
-
-//------------------------------------------------------------------------------
 // Track Manifest Item
 //------------------------------------------------------------------------------
 
-type TrackManifestItem = {
+export type TrackInput = {
   id: string;
   name: string;
   src: string;
@@ -49,31 +40,10 @@ type TrackManifestItem = {
 const iconImportByName = dynamicIconImports as Record<string, unknown>;
 
 //------------------------------------------------------------------------------
-// Load Tracks
-//------------------------------------------------------------------------------
-
-export async function loadTracks() {
-  const response = await fetch("/sounds/tracks.json");
-  if (!response.ok) throw new Error(`Could not load track manifest: ${response.status}`);
-
-  const manifest = (await response.json()) as TrackManifest;
-  const ambienceTracks = manifest.ambience.map((track) => createTrack(track, "ambience", "music"));
-  const environmentTracks = manifest.environment.map((track) =>
-    createTrack(track, "environment", "wind"),
-  );
-
-  return {
-    ambienceTracks,
-    environmentTracks,
-    tracks: [...ambienceTracks, ...environmentTracks],
-  };
-}
-
-//------------------------------------------------------------------------------
 // Create Track
 //------------------------------------------------------------------------------
 
-function createTrack(track: TrackManifestItem, kind: TrackKind, fallbackIcon: TrackIcon): Track {
+export function createTrack(track: TrackInput, kind: TrackKind, fallbackIcon: TrackIcon): Track {
   return {
     id: track.id,
     kind,

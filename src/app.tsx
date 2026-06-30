@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Grid, Heading, Text } from "@chakra-ui/react";
+import { Box, Container, Flex, Grid, Heading } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TrackSection from "~/components/track-section";
@@ -9,7 +9,13 @@ import {
   fadeSoundTo,
   stopSound,
 } from "~/sound/audio";
-import { type Track, loadTracks } from "~/sound/tracks";
+import {
+  type LocalTrackInput,
+  deleteLocalTrack,
+  loadLocalTracks,
+  saveLocalTrack,
+} from "~/sound/local-tracks";
+import { type Track } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
 
 //------------------------------------------------------------------------------
@@ -30,7 +36,6 @@ const emptyTracks: Track[] = [];
 
 function App() {
   const [trackLibrary, setTrackLibrary] = useState<TrackLibrary>();
-  const [loadError, setLoadError] = useState<string>();
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
@@ -39,17 +44,58 @@ function App() {
   const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), [tracks]);
 
   useEffect(() => {
-    void loadTracks()
-      .then((loadedTracks) => {
-        setTrackLibrary(loadedTracks);
-        setVolumes(
-          Object.fromEntries(loadedTracks.tracks.map((track) => [track.id, track.initialVolume])),
-        );
-      })
-      .catch((error: unknown) => {
-        setLoadError(error instanceof Error ? error.message : "Could not load track manifest");
-      });
+    void loadLocalTracks().then((localTracks) => {
+      const ambienceTracks = localTracks.filter((track) => track.kind === "ambience");
+      const environmentTracks = localTracks.filter((track) => track.kind === "environment");
+      const loadedTracks = {
+        ambienceTracks,
+        environmentTracks,
+        tracks: [...ambienceTracks, ...environmentTracks],
+      };
+
+      setTrackLibrary(loadedTracks);
+      setVolumes(
+        Object.fromEntries(loadedTracks.tracks.map((track) => [track.id, track.initialVolume])),
+      );
+    });
   }, []);
+
+  const updateTrackLibrary = useCallback((updater: (previous: TrackLibrary) => TrackLibrary) => {
+    setTrackLibrary((previous) => {
+      if (previous) return updater(previous);
+
+      return updater({
+        ambienceTracks: [],
+        environmentTracks: [],
+        tracks: [],
+      });
+    });
+  }, []);
+
+  const addLocalTrack = useCallback(
+    async (input: LocalTrackInput) => {
+      const track = await saveLocalTrack(input);
+
+      updateTrackLibrary((previous) => {
+        const ambienceTracks =
+          track.kind === "ambience" ? [...previous.ambienceTracks, track] : previous.ambienceTracks;
+        const environmentTracks =
+          track.kind === "environment"
+            ? [...previous.environmentTracks, track]
+            : previous.environmentTracks;
+
+        const loadedTracks = {
+          ambienceTracks,
+          environmentTracks,
+          tracks: [...ambienceTracks, ...environmentTracks],
+        };
+
+        return loadedTracks;
+      });
+      setVolumes((previous) => ({ ...previous, [track.id]: track.initialVolume }));
+    },
+    [updateTrackLibrary],
+  );
 
   const stopTrack = useCallback(
     (trackId: string) => {
@@ -103,6 +149,31 @@ function App() {
     if (sound) fadeSoundTo(sound, volume, 0.12);
   }, []);
 
+  const removeTrack = useCallback(
+    (track: Track) => {
+      stopTrack(track.id);
+      void deleteLocalTrack(track.id);
+      URL.revokeObjectURL(track.src);
+
+      updateTrackLibrary((previous) => {
+        const ambienceTracks = previous.ambienceTracks.filter((item) => item.id !== track.id);
+        const environmentTracks = previous.environmentTracks.filter((item) => item.id !== track.id);
+
+        return {
+          ambienceTracks,
+          environmentTracks,
+          tracks: [...ambienceTracks, ...environmentTracks],
+        };
+      });
+      setVolumes((previous) => {
+        const next = { ...previous };
+        delete next[track.id];
+        return next;
+      });
+    },
+    [stopTrack, updateTrackLibrary],
+  );
+
   useEffect(() => {
     const sounds = activeSounds.current;
 
@@ -115,7 +186,7 @@ function App() {
   return (
     <Box minH="100vh" bg="bg.muted" color="fg">
       <Container maxW="7xl" px={{ base: 4, md: 8 }} py={{ base: 5, md: 8 }}>
-        <Flex align="center" justify="space-between" gap={4} mb={{ base: 6, md: 8 }}>
+        <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Box>
             <Heading as="h1" size={{ base: "xl", md: "2xl" }}>
               Siren
@@ -124,26 +195,30 @@ function App() {
           <ThemeButton />
         </Flex>
 
-        {loadError && <Text color="fg.error">{loadError}</Text>}
-
-        {!trackLibrary && !loadError && <Text color="fg.muted">Loading tracks...</Text>}
-
         {trackLibrary && (
           <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 5, md: 6 }}>
             <TrackSection
+              defaultIcon="music"
+              kind="ambience"
               title="Ambience / Music"
               tracks={trackLibrary.ambienceTracks}
               playingIds={playingIds}
               volumes={volumes}
+              onRemove={removeTrack}
               onToggle={toggleTrack}
+              onUpload={addLocalTrack}
               onVolumeChange={setTrackVolume}
             />
             <TrackSection
+              defaultIcon="wind"
+              kind="environment"
               title="Environment"
               tracks={trackLibrary.environmentTracks}
               playingIds={playingIds}
               volumes={volumes}
+              onRemove={removeTrack}
               onToggle={toggleTrack}
+              onUpload={addLocalTrack}
               onVolumeChange={setTrackVolume}
             />
           </Grid>

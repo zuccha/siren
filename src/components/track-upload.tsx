@@ -1,0 +1,114 @@
+import { Box, Button, Grid, HStack, Input, Text } from "@chakra-ui/react";
+import { UploadIcon } from "lucide-react";
+import { useState } from "react";
+
+import type { LocalTrackInput } from "~/sound/local-tracks";
+import type { TrackKind } from "~/sound/tracks";
+import AudioFileUpload from "~/ui/audio-file-upload";
+import VolumeSlider from "~/ui/volume-slider";
+
+//------------------------------------------------------------------------------
+// Track Upload
+//------------------------------------------------------------------------------
+
+type TrackUploadProps = {
+  kind: TrackKind;
+  defaultIcon: string;
+  onUpload: (input: LocalTrackInput) => Promise<void>;
+};
+
+export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUploadProps) {
+  const [file, setFile] = useState<File>();
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState(defaultIcon);
+  const [initialVolume, setInitialVolume] = useState(50);
+  const [isUploading, setIsUploading] = useState(false);
+  const [fileUploadKey, setFileUploadKey] = useState(0);
+  const [error, setError] = useState<string>();
+
+  const uploadTrack = async () => {
+    if (!file) return;
+
+    setIsUploading(true);
+    setError(undefined);
+
+    try {
+      await onUpload({ file, icon, initialVolume, kind, name });
+      resetForm();
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Could not save track.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const selectFile = (selectedFile: File | undefined) => {
+    setFile(selectedFile);
+    if (selectedFile && !name) setName(removeFileExtension(selectedFile.name));
+  };
+
+  const resetForm = () => {
+    setFile(undefined);
+    setName("");
+    setIcon(defaultIcon);
+    setInitialVolume(50);
+    setFileUploadKey((previous) => previous + 1);
+  };
+
+  return (
+    <Box bg="bg.panel" borderColor="border" borderWidth="1px" px={3} py={2} rounded="sm">
+      <Grid alignItems="center" gap={2} templateColumns="minmax(9rem, 1fr) minmax(7rem, 9rem) auto">
+        <Input
+          aria-label="Track name"
+          onChange={(event) => setName(event.currentTarget.value)}
+          placeholder="Track name"
+          size="xs"
+          value={name}
+        />
+        <Input
+          aria-label="Lucide icon"
+          onChange={(event) => setIcon(event.currentTarget.value)}
+          placeholder="Lucide icon"
+          size="xs"
+          value={icon}
+        />
+        <Button
+          disabled={!file || isUploading}
+          loading={isUploading}
+          onClick={uploadTrack}
+          size="xs"
+        >
+          <UploadIcon size={14} />
+          Add
+        </Button>
+      </Grid>
+
+      <HStack gap={2} mt={2}>
+        <AudioFileUpload flex={2} resetKey={fileUploadKey} file={file} onFileChange={selectFile} />
+        <VolumeSlider
+          aria-label="Initial volume"
+          flex={1}
+          value={initialVolume}
+          onValueChange={setInitialVolume}
+        />
+        <Text color="fg.muted" fontSize="xs" fontVariantNumeric="tabular-nums" minW="3ch">
+          {initialVolume}
+        </Text>
+      </HStack>
+
+      {error && (
+        <Text color="fg.error" fontSize="xs" mt={2}>
+          {error}
+        </Text>
+      )}
+    </Box>
+  );
+}
+
+//------------------------------------------------------------------------------
+// Remove File Extension
+//------------------------------------------------------------------------------
+
+function removeFileExtension(fileName: string) {
+  return fileName.replace(/\.[^.]+$/, "");
+}

@@ -2,6 +2,7 @@ import { HStack, Text } from "@chakra-ui/react";
 import { Volume2Icon } from "lucide-react";
 
 import type { Track } from "~/sound/tracks";
+import VolumeSlider from "~/ui/volume-slider";
 
 //------------------------------------------------------------------------------
 // Volume Control
@@ -23,14 +24,10 @@ export default function VolumeControl({
   return (
     <HStack gap={2} gridColumn={gridColumn}>
       <Volume2Icon size={15} />
-      <input
+      <VolumeSlider
         aria-label={`${track.name} volume`}
-        max={100}
-        min={0}
-        onChange={(event) => onVolumeChange(track.id, event.currentTarget.valueAsNumber)}
-        style={{ accentColor: "currentColor", flex: 1 }}
-        type="range"
         value={volume}
+        onValueChange={(nextVolume) => onVolumeChange(track.id, nextVolume)}
       />
       <Text
         color="fg.muted"

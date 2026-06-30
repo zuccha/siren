@@ -1,5 +1,5 @@
 import { Box, Button, Flex, Grid, Heading } from "@chakra-ui/react";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { PauseIcon, PlayIcon, Trash2Icon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 
 import type { Track } from "~/sound/tracks";
@@ -14,6 +14,7 @@ type TrackControlProps = {
   track: Track;
   isPlaying: boolean;
   volume: number;
+  onRemove: (track: Track) => void;
   onToggle: (track: Track) => void;
   onVolumeChange: (trackId: string, volume: number) => void;
 };
@@ -22,6 +23,7 @@ export default function TrackControl({
   track,
   isPlaying,
   volume,
+  onRemove,
   onToggle,
   onVolumeChange,
 }: TrackControlProps) {
@@ -39,7 +41,7 @@ export default function TrackControl({
       <Grid
         alignItems="center"
         gap={3}
-        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
+        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto auto"
       >
         <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
           <DynamicIcon name={track.icon} size={18} />
@@ -60,6 +62,15 @@ export default function TrackControl({
         >
           <PlayStateIcon size={14} />
           {isPlaying ? "Stop" : "Play"}
+        </Button>
+
+        <Button
+          aria-label={`Delete ${track.name}`}
+          onClick={() => onRemove(track)}
+          size="xs"
+          variant="ghost"
+        >
+          <Trash2Icon size={14} />
         </Button>
       </Grid>
     </Box>

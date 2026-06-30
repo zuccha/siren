@@ -1,13 +1,13 @@
 # Sound files
 
-Put audio files under this folder and list them in `tracks.json`.
+Tracks are added through the app. No hardcoded track manifest is loaded at startup.
 
-Example paths:
+Local tracks added through the app are stored only in the current browser:
 
-- `public/sounds/ambience/calm.mp3` is served as `/sounds/ambience/calm.mp3`
-- `public/sounds/environment/rain.mp3` is served as `/sounds/environment/rain.mp3`
-
-The app reads `public/sounds/tracks.json` at startup. Browsers cannot list a folder directly, so every track must be listed in that JSON file.
+- track metadata is stored in `localStorage`
+- audio files are stored in IndexedDB
+- no files are uploaded to a server
+- clearing browser site data removes local tracks
 
 Icons use Lucide icon names. These all work:
 
