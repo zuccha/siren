@@ -2,6 +2,7 @@ import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
 import { useState } from "react";
 
 import EmptyPlaylistState from "~/components/empty-playlist-state";
+import MasterVolumeControl from "~/components/master-volume-control";
 import PlaylistManager from "~/components/playlist-manager";
 import TrackLibraryDrawer from "~/components/track-library-drawer";
 import TrackSection from "~/components/track-section";
@@ -30,7 +31,7 @@ function App() {
 
   return (
     <Box minH="100vh" bg="bg.muted" color="fg">
-      <Container maxW="7xl" px={{ base: 4, md: 8 }} py={{ base: 5, md: 8 }}>
+      <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Box>
             <Heading as="h1" size={{ base: "xl", md: "2xl" }}>
@@ -105,6 +106,15 @@ function App() {
           </Grid>
         )}
       </Container>
+      {mixer.isLoaded && (
+        <MasterVolumeControl
+          hasActiveTracks={mixer.playingIds.size > 0}
+          isPaused={mixer.isPaused}
+          volume={mixer.masterVolume}
+          onPauseToggle={mixer.togglePauseAll}
+          onVolumeChange={mixer.setMasterVolume}
+        />
+      )}
     </Box>
   );
 }

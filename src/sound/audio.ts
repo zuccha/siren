@@ -6,6 +6,8 @@ import type { Track } from "./tracks";
 
 export type ActiveSound = {
   audio: HTMLAudioElement;
+  baseVolume: number;
+  masterVolume: number;
   stopTimerId?: number;
   volumeTimerId?: number;
 };
@@ -19,14 +21,18 @@ export const musicFadeDuration = 1.8;
 export function createSound(
   track: Track,
   volume: number,
-  options: { fadeIn?: boolean } = {},
+  options: { fadeIn?: boolean; masterVolume?: number } = {},
 ): ActiveSound {
   const audio = new Audio(track.src);
+  const sound = {
+    audio,
+    baseVolume: options.fadeIn ? 0 : volume,
+    masterVolume: options.masterVolume ?? 100,
+  };
+
   audio.loop = true;
   audio.preload = "auto";
-  audio.volume = options.fadeIn ? 0 : volume / 100;
-
-  const sound = { audio };
+  audio.volume = getSoundVolume(sound);
 
   void audio.play();
 
@@ -35,6 +41,31 @@ export function createSound(
   }
 
   return sound;
+}
+
+//------------------------------------------------------------------------------
+// Pause Sound
+//------------------------------------------------------------------------------
+
+export function pauseSound(sound: ActiveSound) {
+  sound.audio.pause();
+}
+
+//------------------------------------------------------------------------------
+// Resume Sound
+//------------------------------------------------------------------------------
+
+export function resumeSound(sound: ActiveSound) {
+  void sound.audio.play();
+}
+
+//------------------------------------------------------------------------------
+// Set Sound Master Volume
+//------------------------------------------------------------------------------
+
+export function setSoundMasterVolume(sound: ActiveSound, volume: number) {
+  sound.masterVolume = volume;
+  sound.audio.volume = getSoundVolume(sound);
 }
 
 //------------------------------------------------------------------------------
@@ -55,16 +86,22 @@ export function stopSound(sound: ActiveSound) {
 export function fadeSoundTo(sound: ActiveSound, volume: number, duration = musicFadeDuration) {
   clearVolumeTimer(sound);
 
+  if (duration <= 0) {
+    sound.baseVolume = volume;
+    sound.audio.volume = getSoundVolume(sound);
+    return;
+  }
+
   const frameDuration = 16;
-  const startVolume = sound.audio.volume;
-  const targetVolume = volume / 100;
+  const startVolume = sound.baseVolume;
   const startTime = performance.now();
   const durationMs = duration * 1000;
 
   sound.volumeTimerId = window.setInterval(() => {
     const elapsed = performance.now() - startTime;
     const progress = Math.min(elapsed / durationMs, 1);
-    sound.audio.volume = startVolume + (targetVolume - startVolume) * progress;
+    sound.baseVolume = startVolume + (volume - startVolume) * progress;
+    sound.audio.volume = getSoundVolume(sound);
 
     if (progress >= 1) {
       clearVolumeTimer(sound);
@@ -103,4 +140,20 @@ function clearVolumeTimer(sound: ActiveSound) {
     window.clearInterval(sound.volumeTimerId);
     sound.volumeTimerId = undefined;
   }
+}
+
+//------------------------------------------------------------------------------
+// Get Sound Volume
+//------------------------------------------------------------------------------
+
+function getSoundVolume(sound: ActiveSound) {
+  return clampVolume((sound.baseVolume / 100) * (sound.masterVolume / 100));
+}
+
+//------------------------------------------------------------------------------
+// Clamp Volume
+//------------------------------------------------------------------------------
+
+function clampVolume(volume: number) {
+  return Math.min(Math.max(volume, 0), 1);
 }

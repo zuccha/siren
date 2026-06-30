@@ -5,6 +5,9 @@ import {
   createSound,
   fadeOutAndStop,
   fadeSoundTo,
+  pauseSound,
+  resumeSound,
+  setSoundMasterVolume,
   stopSound,
 } from "~/sound/audio";
 import {
@@ -130,6 +133,8 @@ function sortPlaylists(playlists: TrackPlaylist[]) {
 export default function useTrackMixer() {
   const [library, setLibrary] = useState<MixerLibrary>();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>();
+  const [isPaused, setIsPaused] = useState(false);
+  const [masterVolume, setMasterVolumeState] = useState(100);
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
@@ -319,11 +324,14 @@ export default function useTrackMixer() {
 
       const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
         fadeIn: true,
+        masterVolume,
       });
+      if (isPaused) pauseSound(sound);
+
       activeSounds.current.set(track.id, sound);
       setPlayingIds((previous) => new Set(previous).add(track.id));
     },
-    [stopTrack, trackById, volumes],
+    [isPaused, masterVolume, stopTrack, trackById, volumes],
   );
 
   //------------------------------------------------------------------------------
@@ -347,6 +355,51 @@ export default function useTrackMixer() {
     const sound = activeSounds.current.get(trackId);
     if (sound) fadeSoundTo(sound, volume, 0.12);
   }, []);
+
+  //------------------------------------------------------------------------------
+  // Set Master Volume
+  //------------------------------------------------------------------------------
+
+  const setMasterVolume = useCallback((volume: number) => {
+    setMasterVolumeState(volume);
+
+    for (const sound of activeSounds.current.values()) {
+      setSoundMasterVolume(sound, volume);
+    }
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Pause All
+  //------------------------------------------------------------------------------
+
+  const pauseAll = useCallback(() => {
+    for (const sound of activeSounds.current.values()) {
+      pauseSound(sound);
+    }
+
+    setIsPaused(true);
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Resume All
+  //------------------------------------------------------------------------------
+
+  const resumeAll = useCallback(() => {
+    for (const sound of activeSounds.current.values()) {
+      resumeSound(sound);
+    }
+
+    setIsPaused(false);
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Toggle Pause All
+  //------------------------------------------------------------------------------
+
+  const togglePauseAll = useCallback(() => {
+    if (isPaused) resumeAll();
+    else pauseAll();
+  }, [isPaused, pauseAll, resumeAll]);
 
   //------------------------------------------------------------------------------
   // Edit Track
@@ -438,6 +491,8 @@ export default function useTrackMixer() {
     deleteTrack,
     editTrack,
     isLoaded: library !== undefined,
+    isPaused,
+    masterVolume,
     playlists,
     playingIds,
     removePlaylist,
@@ -445,8 +500,10 @@ export default function useTrackMixer() {
     reorderTracks,
     selectedPlaylist,
     selectedPlaylistId,
+    setMasterVolume,
     setSelectedPlaylistId,
     setTrackVolume,
+    togglePauseAll,
     toggleTrack,
     trackLibrary: library ? trackLibrary : emptyTrackLibrary,
     tracks,
