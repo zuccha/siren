@@ -17,24 +17,17 @@ function App() {
   );
 
   const activeSounds = useRef(new Map<string, ActiveSound>());
-
   const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), []);
 
   const stopTrack = useCallback(
     (trackId: string) => {
       const sound = activeSounds.current.get(trackId);
-
-      if (!sound) {
-        return;
-      }
+      if (!sound) return;
 
       const track = trackById.get(trackId);
 
-      if (track?.kind === "ambience") {
-        fadeOutAndStop(sound);
-      } else {
-        stopSound(sound);
-      }
+      if (track?.kind === "ambience") fadeOutAndStop(sound);
+      else stopSound(sound);
 
       activeSounds.current.delete(trackId);
       setPlayingIds((previous) => {
@@ -51,15 +44,12 @@ function App() {
       if (track.kind === "ambience") {
         for (const activeId of activeSounds.current.keys()) {
           const activeTrack = trackById.get(activeId);
-
-          if (activeTrack?.kind === "ambience") {
-            stopTrack(activeId);
-          }
+          if (activeTrack?.kind === "ambience") stopTrack(activeId);
         }
       }
 
       const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
-        fadeIn: track.kind === "ambience",
+        fadeIn: true,
       });
       activeSounds.current.set(track.id, sound);
       setPlayingIds((previous) => new Set(previous).add(track.id));
@@ -69,33 +59,23 @@ function App() {
 
   const toggleTrack = useCallback(
     (track: Track) => {
-      if (activeSounds.current.has(track.id)) {
-        stopTrack(track.id);
-        return;
-      }
-
-      startTrack(track);
+      if (activeSounds.current.has(track.id)) stopTrack(track.id);
+      else startTrack(track);
     },
     [startTrack, stopTrack],
   );
 
   const setTrackVolume = useCallback((trackId: string, volume: number) => {
     setVolumes((previous) => ({ ...previous, [trackId]: volume }));
-
     const sound = activeSounds.current.get(trackId);
-    if (sound) {
-      sound.output.gain.value = volume / 100;
-    }
+    if (sound) sound.output.gain.value = volume / 100;
   }, []);
 
   useEffect(() => {
     const sounds = activeSounds.current;
 
     return () => {
-      for (const sound of sounds.values()) {
-        stopSound(sound);
-      }
-
+      for (const sound of sounds.values()) stopSound(sound);
       sounds.clear();
     };
   }, []);

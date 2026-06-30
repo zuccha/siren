@@ -28,10 +28,7 @@ export default function VolumeControl({
         max={100}
         min={0}
         onChange={(event) => onVolumeChange(track.id, event.currentTarget.valueAsNumber)}
-        style={{
-          accentColor: "currentColor",
-          flex: 1,
-        }}
+        style={{ accentColor: "currentColor", flex: 1 }}
         type="range"
         value={volume}
       />

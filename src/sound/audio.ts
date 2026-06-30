@@ -21,11 +21,7 @@ export const musicFadeDuration = 1.8;
 function createNoiseBuffer(context: AudioContext, seconds: number) {
   const buffer = context.createBuffer(1, context.sampleRate * seconds, context.sampleRate);
   const data = buffer.getChannelData(0);
-
-  for (let index = 0; index < data.length; index += 1) {
-    data[index] = Math.random() * 2 - 1;
-  }
-
+  for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
   return buffer;
 }
 
@@ -34,9 +30,7 @@ function createNoiseBuffer(context: AudioContext, seconds: number) {
 //------------------------------------------------------------------------------
 
 function connectNodes(nodes: AudioNode[]) {
-  for (let index = 0; index < nodes.length - 1; index += 1) {
-    nodes[index]?.connect(nodes[index + 1]!);
-  }
+  for (let index = 0; index < nodes.length - 1; ++index) nodes[index]!.connect(nodes[index + 1]!);
 }
 
 //------------------------------------------------------------------------------
@@ -54,7 +48,6 @@ function startTone(
   oscillator.type = type;
   oscillator.connect(output);
   oscillator.start();
-
   return oscillator;
 }
 
@@ -68,7 +61,6 @@ function startNoise(context: AudioContext, output: AudioNode, seconds = 2) {
   source.loop = true;
   source.connect(output);
   source.start();
-
   return source;
 }
 
@@ -166,9 +158,7 @@ export function createSound(
 //------------------------------------------------------------------------------
 
 export function stopSound(sound: ActiveSound) {
-  if (sound.stopTimerId) {
-    window.clearTimeout(sound.stopTimerId);
-  }
+  if (sound.stopTimerId) window.clearTimeout(sound.stopTimerId);
 
   for (const source of sound.sources) {
     source.stop();
@@ -196,10 +186,7 @@ export function fadeSoundTo(sound: ActiveSound, volume: number, duration = music
 
 export function fadeOutAndStop(sound: ActiveSound, duration = musicFadeDuration) {
   fadeGainTo(sound.output, 0, duration);
-
-  sound.stopTimerId = window.setTimeout(() => {
-    stopSound(sound);
-  }, duration * 1000);
+  sound.stopTimerId = window.setTimeout(() => stopSound(sound), duration * 1000);
 }
 
 //------------------------------------------------------------------------------
