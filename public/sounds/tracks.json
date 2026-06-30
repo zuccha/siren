@@ -18,7 +18,7 @@
       "id": "tribal",
       "name": "Tribal",
       "src": "/sounds/ambience/tribal.mp3",
-      "icon": "drums",
+      "icon": "drum",
       "initialVolume": 50
     },
     {
@@ -74,7 +74,7 @@
       "id": "eerie",
       "name": "Eerie",
       "src": "/sounds/ambience/eerie.mp3",
-      "icon": "music",
+      "icon": "ghost",
       "initialVolume": 50
     },
     {
@@ -104,7 +104,7 @@
       "id": "rain",
       "name": "Rain",
       "src": "/sounds/environment/rain.mp3",
-      "icon": "rain",
+      "icon": "cloud-rain",
       "initialVolume": 38
     },
     {

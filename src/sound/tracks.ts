@@ -1,14 +1,4 @@
-import {
-  CloudRainIcon,
-  DrumIcon,
-  FlameIcon,
-  GhostIcon,
-  MusicIcon,
-  SwordsIcon,
-  TreesIcon,
-  WindIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { dynamicIconImports, type IconName } from "lucide-react/dynamic";
 
 //------------------------------------------------------------------------------
 // Track Kind
@@ -20,15 +10,7 @@ export type TrackKind = "ambience" | "environment";
 // Track Icon
 //------------------------------------------------------------------------------
 
-export type TrackIcon =
-  | "drums"
-  | "flame"
-  | "ghost"
-  | "music"
-  | "rain"
-  | "swords"
-  | "trees"
-  | "wind";
+export type TrackIcon = string;
 
 //------------------------------------------------------------------------------
 // Track
@@ -39,7 +21,7 @@ export type Track = {
   kind: TrackKind;
   name: string;
   src: string;
-  icon: LucideIcon;
+  icon: IconName;
   initialVolume: number;
 };
 
@@ -64,16 +46,7 @@ type TrackManifestItem = {
   initialVolume?: number;
 };
 
-const iconByName: Record<TrackIcon, LucideIcon> = {
-  drums: DrumIcon,
-  flame: FlameIcon,
-  ghost: GhostIcon,
-  music: MusicIcon,
-  rain: CloudRainIcon,
-  swords: SwordsIcon,
-  trees: TreesIcon,
-  wind: WindIcon,
-};
+const iconImportByName = dynamicIconImports as Record<string, unknown>;
 
 //------------------------------------------------------------------------------
 // Load Tracks
@@ -106,7 +79,60 @@ function createTrack(track: TrackManifestItem, kind: TrackKind, fallbackIcon: Tr
     kind,
     name: track.name,
     src: track.src,
-    icon: iconByName[track.icon ?? fallbackIcon],
+    icon: getTrackIcon(track.icon ?? fallbackIcon, fallbackIcon),
     initialVolume: track.initialVolume ?? 50,
   };
+}
+
+//------------------------------------------------------------------------------
+// Get Track Icon
+//------------------------------------------------------------------------------
+
+function getTrackIcon(icon: string, fallbackIcon: string) {
+  return resolveTrackIcon(icon) ?? resolveTrackIcon(fallbackIcon) ?? "music";
+}
+
+//------------------------------------------------------------------------------
+// Resolve Track Icon
+//------------------------------------------------------------------------------
+
+function resolveTrackIcon(icon: string) {
+  const normalizedIcon = normalizeTrackIconName(icon);
+  return findIconName(normalizedIcon);
+}
+
+//------------------------------------------------------------------------------
+// Normalize Track Icon Name
+//------------------------------------------------------------------------------
+
+function normalizeTrackIconName(icon: string) {
+  return icon.trim().replace(/Icon$/, "");
+}
+
+//------------------------------------------------------------------------------
+// Find Icon Name
+//------------------------------------------------------------------------------
+
+function findIconName(icon: string): IconName | undefined {
+  const candidates = [icon, toKebabCase(icon)];
+  return candidates.find(isIconName);
+}
+
+//------------------------------------------------------------------------------
+// Is Icon Name
+//------------------------------------------------------------------------------
+
+function isIconName(icon: string): icon is IconName {
+  return icon in iconImportByName;
+}
+
+//------------------------------------------------------------------------------
+// To Kebab Case
+//------------------------------------------------------------------------------
+
+function toKebabCase(value: string) {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[\s_]+/g, "-")
+    .toLowerCase();
 }

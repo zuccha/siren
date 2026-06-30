@@ -1,5 +1,6 @@
 import { Box, Button, Flex, Grid, Heading } from "@chakra-ui/react";
 import { PauseIcon, PlayIcon } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 
 import type { Track } from "~/sound/tracks";
 
@@ -24,7 +25,6 @@ export default function TrackControl({
   onToggle,
   onVolumeChange,
 }: TrackControlProps) {
-  const Icon = track.icon;
   const PlayStateIcon = isPlaying ? PauseIcon : PlayIcon;
 
   return (
@@ -42,7 +42,7 @@ export default function TrackControl({
         templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
       >
         <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
-          <Icon size={18} />
+          <DynamicIcon name={track.icon} size={18} />
         </Flex>
 
         <Heading fontWeight={isPlaying ? "semibold" : "medium"} minW={0} size="sm">
