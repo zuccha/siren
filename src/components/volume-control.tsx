@@ -33,7 +33,7 @@ export default function VolumeControl({
         color="fg.muted"
         fontSize="xs"
         fontVariantNumeric="tabular-nums"
-        minW="3ch"
+        minW="2ch"
         textAlign="right"
       >
         {volume}
