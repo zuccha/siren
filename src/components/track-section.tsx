@@ -15,6 +15,7 @@ type TrackSectionProps = {
   kind: Track["kind"];
   title: string;
   tracks: Track[];
+  isEditing: boolean;
   playingIds: Set<string>;
   volumes: Record<string, number>;
   onRemove: (track: Track) => void;
@@ -28,6 +29,7 @@ export default function TrackSection({
   kind,
   title,
   tracks,
+  isEditing,
   playingIds,
   volumes,
   onRemove,
@@ -45,6 +47,7 @@ export default function TrackSection({
           <TrackControl
             key={track.id}
             track={track}
+            isEditing={isEditing}
             isPlaying={playingIds.has(track.id)}
             volume={volumes[track.id] ?? track.initialVolume}
             onRemove={onRemove}

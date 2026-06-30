@@ -13,6 +13,7 @@ import VolumeControl from "./volume-control";
 
 type TrackControlProps = {
   track: Track;
+  isEditing: boolean;
   isPlaying: boolean;
   volume: number;
   onRemove: (track: Track) => void;
@@ -22,6 +23,7 @@ type TrackControlProps = {
 
 export default function TrackControl({
   track,
+  isEditing,
   isPlaying,
   volume,
   onRemove,
@@ -40,21 +42,23 @@ export default function TrackControl({
       py={2}
       rounded="sm"
     >
-      <IconButton
-        Icon={XIcon}
-        aria-label={`Delete ${track.name}`}
-        colorPalette="red"
-        minH={6}
-        minW={6}
-        onClick={() => onRemove(track)}
-        position="absolute"
-        right={0}
-        size="2xs"
-        top={0}
-        transform="translate(50%, -50%)"
-        variant="solid"
-        zIndex={1}
-      />
+      {isEditing && (
+        <IconButton
+          Icon={XIcon}
+          aria-label={`Delete ${track.name}`}
+          colorPalette="red"
+          minH={6}
+          minW={6}
+          onClick={() => onRemove(track)}
+          position="absolute"
+          right={0}
+          size="2xs"
+          top={0}
+          transform="translate(50%, -50%)"
+          variant="solid"
+          zIndex={1}
+        />
+      )}
 
       <Grid
         alignItems="center"

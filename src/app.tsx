@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Grid, Heading } from "@chakra-ui/react";
+import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TrackSection from "~/components/track-section";
@@ -17,6 +17,7 @@ import {
 } from "~/sound/local-tracks";
 import { type Track } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
+import EditModeSwitch from "~/ui/edit-mode-switch";
 
 //------------------------------------------------------------------------------
 // Track Library
@@ -36,6 +37,7 @@ const emptyTracks: Track[] = [];
 
 function App() {
   const [trackLibrary, setTrackLibrary] = useState<TrackLibrary>();
+  const [isEditing, setIsEditing] = useState(false);
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
@@ -192,7 +194,10 @@ function App() {
               Siren
             </Heading>
           </Box>
-          <ThemeButton />
+          <HStack gap={3}>
+            <EditModeSwitch isEditing={isEditing} onEditingChange={setIsEditing} />
+            <ThemeButton />
+          </HStack>
         </Flex>
 
         {trackLibrary && (
@@ -202,6 +207,7 @@ function App() {
               kind="ambience"
               title="Ambience / Music"
               tracks={trackLibrary.ambienceTracks}
+              isEditing={isEditing}
               playingIds={playingIds}
               volumes={volumes}
               onRemove={removeTrack}
@@ -214,6 +220,7 @@ function App() {
               kind="environment"
               title="Environment"
               tracks={trackLibrary.environmentTracks}
+              isEditing={isEditing}
               playingIds={playingIds}
               volumes={volumes}
               onRemove={removeTrack}
