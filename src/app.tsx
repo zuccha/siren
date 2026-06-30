@@ -1,268 +1,18 @@
 import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 
 import TrackSection from "~/components/track-section";
-import {
-  type ActiveSound,
-  createSound,
-  fadeOutAndStop,
-  fadeSoundTo,
-  stopSound,
-} from "~/sound/audio";
-import {
-  type LocalTrackInput,
-  type LocalTrackUpdateInput,
-  deleteLocalTrack,
-  loadLocalTracks,
-  reorderLocalTracks,
-  saveLocalTrack,
-  updateLocalTrack,
-} from "~/sound/local-tracks";
-import { type Track, type TrackDropPosition } from "~/sound/tracks";
+import useTrackMixer from "~/hooks/use-track-mixer";
 import ThemeButton from "~/theme/theme-button";
 import EditModeSwitch from "~/ui/edit-mode-switch";
-
-//------------------------------------------------------------------------------
-// Track Library
-//------------------------------------------------------------------------------
-
-type TrackLibrary = {
-  ambienceTracks: Track[];
-  environmentTracks: Track[];
-  tracks: Track[];
-};
-
-const emptyTracks: Track[] = [];
-
-//------------------------------------------------------------------------------
-// Reorder Track List
-//------------------------------------------------------------------------------
-
-function reorderTrackList(
-  tracks: Track[],
-  sourceId: string,
-  targetId: string,
-  position: TrackDropPosition,
-) {
-  const sourceIndex = tracks.findIndex((track) => track.id === sourceId);
-  const targetIndex = tracks.findIndex((track) => track.id === targetId);
-
-  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return tracks;
-
-  const nextTracks = [...tracks];
-  const [movedTrack] = nextTracks.splice(sourceIndex, 1);
-  if (!movedTrack) return tracks;
-
-  const adjustedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-  const insertIndex = position === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
-  nextTracks.splice(insertIndex, 0, movedTrack);
-
-  return nextTracks;
-}
 
 //------------------------------------------------------------------------------
 // App
 //------------------------------------------------------------------------------
 
 function App() {
-  const [trackLibrary, setTrackLibrary] = useState<TrackLibrary>();
   const [isEditing, setIsEditing] = useState(false);
-  const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
-  const [volumes, setVolumes] = useState<Record<string, number>>({});
-
-  const activeSounds = useRef(new Map<string, ActiveSound>());
-  const tracks = trackLibrary?.tracks ?? emptyTracks;
-  const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), [tracks]);
-
-  useEffect(() => {
-    void loadLocalTracks().then((localTracks) => {
-      const ambienceTracks = localTracks.filter((track) => track.kind === "ambience");
-      const environmentTracks = localTracks.filter((track) => track.kind === "environment");
-      const loadedTracks = {
-        ambienceTracks,
-        environmentTracks,
-        tracks: [...ambienceTracks, ...environmentTracks],
-      };
-
-      setTrackLibrary(loadedTracks);
-      setVolumes(
-        Object.fromEntries(loadedTracks.tracks.map((track) => [track.id, track.initialVolume])),
-      );
-    });
-  }, []);
-
-  const updateTrackLibrary = useCallback((updater: (previous: TrackLibrary) => TrackLibrary) => {
-    setTrackLibrary((previous) => {
-      if (previous) return updater(previous);
-
-      return updater({
-        ambienceTracks: [],
-        environmentTracks: [],
-        tracks: [],
-      });
-    });
-  }, []);
-
-  const addLocalTrack = useCallback(
-    async (input: LocalTrackInput) => {
-      const track = await saveLocalTrack(input);
-
-      updateTrackLibrary((previous) => {
-        const ambienceTracks =
-          track.kind === "ambience" ? [...previous.ambienceTracks, track] : previous.ambienceTracks;
-        const environmentTracks =
-          track.kind === "environment"
-            ? [...previous.environmentTracks, track]
-            : previous.environmentTracks;
-
-        const loadedTracks = {
-          ambienceTracks,
-          environmentTracks,
-          tracks: [...ambienceTracks, ...environmentTracks],
-        };
-
-        return loadedTracks;
-      });
-      setVolumes((previous) => ({ ...previous, [track.id]: track.initialVolume }));
-    },
-    [updateTrackLibrary],
-  );
-
-  const stopTrack = useCallback(
-    (trackId: string) => {
-      const sound = activeSounds.current.get(trackId);
-      if (!sound) return;
-
-      const track = trackById.get(trackId);
-
-      if (track?.kind === "ambience") fadeOutAndStop(sound);
-      else stopSound(sound);
-
-      activeSounds.current.delete(trackId);
-      setPlayingIds((previous) => {
-        const next = new Set(previous);
-        next.delete(trackId);
-        return next;
-      });
-    },
-    [trackById],
-  );
-
-  const startTrack = useCallback(
-    (track: Track) => {
-      if (track.kind === "ambience") {
-        for (const activeId of activeSounds.current.keys()) {
-          const activeTrack = trackById.get(activeId);
-          if (activeTrack?.kind === "ambience") stopTrack(activeId);
-        }
-      }
-
-      const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
-        fadeIn: true,
-      });
-      activeSounds.current.set(track.id, sound);
-      setPlayingIds((previous) => new Set(previous).add(track.id));
-    },
-    [stopTrack, trackById, volumes],
-  );
-
-  const toggleTrack = useCallback(
-    (track: Track) => {
-      if (activeSounds.current.has(track.id)) stopTrack(track.id);
-      else startTrack(track);
-    },
-    [startTrack, stopTrack],
-  );
-
-  const setTrackVolume = useCallback((trackId: string, volume: number) => {
-    setVolumes((previous) => ({ ...previous, [trackId]: volume }));
-    const sound = activeSounds.current.get(trackId);
-    if (sound) fadeSoundTo(sound, volume, 0.12);
-  }, []);
-
-  const editTrack = useCallback(
-    (track: Track, input: LocalTrackUpdateInput) => {
-      const updatedTrack = updateLocalTrack(track, input);
-
-      updateTrackLibrary((previous) => {
-        const ambienceTracks = previous.ambienceTracks.map((item) =>
-          item.id === updatedTrack.id ? updatedTrack : item,
-        );
-        const environmentTracks = previous.environmentTracks.map((item) =>
-          item.id === updatedTrack.id ? updatedTrack : item,
-        );
-
-        return {
-          ambienceTracks,
-          environmentTracks,
-          tracks: [...ambienceTracks, ...environmentTracks],
-        };
-      });
-      setTrackVolume(updatedTrack.id, updatedTrack.initialVolume);
-    },
-    [setTrackVolume, updateTrackLibrary],
-  );
-
-  const reorderTracks = useCallback(
-    (kind: Track["kind"], sourceId: string, targetId: string, position: TrackDropPosition) => {
-      updateTrackLibrary((previous) => {
-        const ambienceTracks =
-          kind === "ambience"
-            ? reorderTrackList(previous.ambienceTracks, sourceId, targetId, position)
-            : previous.ambienceTracks;
-        const environmentTracks =
-          kind === "environment"
-            ? reorderTrackList(previous.environmentTracks, sourceId, targetId, position)
-            : previous.environmentTracks;
-
-        reorderLocalTracks(
-          kind,
-          (kind === "ambience" ? ambienceTracks : environmentTracks).map((track) => track.id),
-        );
-
-        return {
-          ambienceTracks,
-          environmentTracks,
-          tracks: [...ambienceTracks, ...environmentTracks],
-        };
-      });
-    },
-    [updateTrackLibrary],
-  );
-
-  const removeTrack = useCallback(
-    (track: Track) => {
-      stopTrack(track.id);
-      void deleteLocalTrack(track.id);
-      URL.revokeObjectURL(track.src);
-
-      updateTrackLibrary((previous) => {
-        const ambienceTracks = previous.ambienceTracks.filter((item) => item.id !== track.id);
-        const environmentTracks = previous.environmentTracks.filter((item) => item.id !== track.id);
-
-        return {
-          ambienceTracks,
-          environmentTracks,
-          tracks: [...ambienceTracks, ...environmentTracks],
-        };
-      });
-      setVolumes((previous) => {
-        const next = { ...previous };
-        delete next[track.id];
-        return next;
-      });
-    },
-    [stopTrack, updateTrackLibrary],
-  );
-
-  useEffect(() => {
-    const sounds = activeSounds.current;
-
-    return () => {
-      for (const sound of sounds.values()) stopSound(sound);
-      sounds.clear();
-    };
-  }, []);
+  const mixer = useTrackMixer();
 
   return (
     <Box minH="100vh" bg="bg.muted" color="fg">
@@ -279,37 +29,37 @@ function App() {
           </HStack>
         </Flex>
 
-        {trackLibrary && (
+        {mixer.isLoaded && (
           <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 5, md: 6 }}>
             <TrackSection
               defaultIcon="music"
               kind="ambience"
               title="Ambience / Music"
-              tracks={trackLibrary.ambienceTracks}
+              tracks={mixer.trackLibrary.ambienceTracks}
               isEditing={isEditing}
-              playingIds={playingIds}
-              volumes={volumes}
-              onEdit={editTrack}
-              onRemove={removeTrack}
-              onReorder={reorderTracks}
-              onToggle={toggleTrack}
-              onUpload={addLocalTrack}
-              onVolumeChange={setTrackVolume}
+              playingIds={mixer.playingIds}
+              volumes={mixer.volumes}
+              onEdit={mixer.editTrack}
+              onRemove={mixer.removeTrack}
+              onReorder={mixer.reorderTracks}
+              onToggle={mixer.toggleTrack}
+              onUpload={mixer.addLocalTrack}
+              onVolumeChange={mixer.setTrackVolume}
             />
             <TrackSection
               defaultIcon="wind"
               kind="environment"
               title="Environment"
-              tracks={trackLibrary.environmentTracks}
+              tracks={mixer.trackLibrary.environmentTracks}
               isEditing={isEditing}
-              playingIds={playingIds}
-              volumes={volumes}
-              onEdit={editTrack}
-              onRemove={removeTrack}
-              onReorder={reorderTracks}
-              onToggle={toggleTrack}
-              onUpload={addLocalTrack}
-              onVolumeChange={setTrackVolume}
+              playingIds={mixer.playingIds}
+              volumes={mixer.volumes}
+              onEdit={mixer.editTrack}
+              onRemove={mixer.removeTrack}
+              onReorder={mixer.reorderTracks}
+              onToggle={mixer.toggleTrack}
+              onUpload={mixer.addLocalTrack}
+              onVolumeChange={mixer.setTrackVolume}
             />
           </Grid>
         )}
