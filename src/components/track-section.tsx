@@ -1,4 +1,5 @@
-import { Box, Heading, Stack } from "@chakra-ui/react";
+import { Box, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
+import { CircleOffIcon } from "lucide-react";
 import { Fragment, useState, type DragEvent } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -166,6 +167,28 @@ export default function TrackSection({
         {title}
       </Heading>
       <Stack gap={0}>
+        {tracks.length === 0 && (
+          <Box
+            alignItems="center"
+            bg="transparent"
+            borderColor="border.emphasized"
+            borderStyle="dashed"
+            borderWidth="1px"
+            color="fg.muted"
+            display="flex"
+            gap={2}
+            px={3}
+            py={2}
+            rounded="sm"
+          >
+            <HStack h={8}>
+              <Icon color="fg.subtle" size="sm">
+                <CircleOffIcon />
+              </Icon>
+              <Text fontSize="sm">This list is empty.</Text>
+            </HStack>
+          </Box>
+        )}
         {tracks.map((track, trackIndex) => (
           <Fragment key={track.id}>
             <Box h={trackIndex === 0 ? 0 : trackListGap} position="relative">
@@ -214,10 +237,10 @@ export default function TrackSection({
           )}
         </Box>
         {isEditing && (
-          <>
+          <Stack gap={2} mt={tracks.length > 0 ? 0 : 2}>
             <ExistingTrackList tracks={availableTracks} onAddTrack={onAddTrack} />
             <TrackUpload kind={kind} defaultIcon={defaultIcon} onUpload={onUpload} />
-          </>
+          </Stack>
         )}
       </Stack>
     </Box>

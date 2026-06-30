@@ -17,7 +17,16 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
   if (tracks.length === 0) return null;
 
   return (
-    <Flex borderColor="border" borderWidth="1px" gap={2} p={2} rounded="sm" wrap="wrap">
+    <Flex
+      borderColor="border"
+      borderWidth="1px"
+      gap={2}
+      maxH="9rem"
+      overflowY="auto"
+      p={2}
+      rounded="sm"
+      wrap="wrap"
+    >
       {tracks.map((track) => (
         <Button
           key={track.id}

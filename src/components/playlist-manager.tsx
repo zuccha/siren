@@ -74,7 +74,7 @@ export default function PlaylistManager({
               </Button>
               {isEditing && (
                 <DeletePlaylistButton
-                  disabled={playlists.length < 2}
+                  disabled={false}
                   isSelected={isSelected}
                   playlist={playlist}
                   onRemovePlaylist={onRemovePlaylist}

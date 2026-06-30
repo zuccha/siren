@@ -300,12 +300,12 @@ function createPlaylist(name: string): TrackPlaylist {
 }
 
 //------------------------------------------------------------------------------
-// Create Default Library Metadata
+// Create Empty Library Metadata
 //------------------------------------------------------------------------------
 
-function createDefaultLibraryMetadata(): LocalLibraryMetadata {
+function createEmptyLibraryMetadata(): LocalLibraryMetadata {
   return {
-    playlists: [createPlaylist("Default")],
+    playlists: [],
     tracks: [],
   };
 }
@@ -352,24 +352,15 @@ function loadLocalLibraryMetadata(): LocalLibraryMetadata {
   const serializedMetadata = localStorage.getItem(libraryStorageKey);
 
   if (!serializedMetadata) {
-    const metadata = createDefaultLibraryMetadata();
+    const metadata = createEmptyLibraryMetadata();
     saveLocalLibraryMetadata(metadata);
     return metadata;
   }
 
   try {
-    const metadata = JSON.parse(serializedMetadata) as LocalLibraryMetadata;
-    if (metadata.playlists.length > 0) return metadata;
-
-    const metadataWithDefaultPlaylist = {
-      ...metadata,
-      playlists: createDefaultLibraryMetadata().playlists,
-    };
-
-    saveLocalLibraryMetadata(metadataWithDefaultPlaylist);
-    return metadataWithDefaultPlaylist;
+    return JSON.parse(serializedMetadata) as LocalLibraryMetadata;
   } catch {
-    const metadata = createDefaultLibraryMetadata();
+    const metadata = createEmptyLibraryMetadata();
     saveLocalLibraryMetadata(metadata);
     return metadata;
   }

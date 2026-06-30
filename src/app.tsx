@@ -1,6 +1,7 @@
 import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
 import { useState } from "react";
 
+import EmptyPlaylistState from "~/components/empty-playlist-state";
 import PlaylistManager from "~/components/playlist-manager";
 import TrackSection from "~/components/track-section";
 import useTrackMixer from "~/hooks/use-track-mixer";
@@ -41,7 +42,11 @@ function App() {
           </HStack>
         </Flex>
 
-        {mixer.isLoaded && (
+        {mixer.isLoaded && mixer.playlists.length === 0 && (
+          <EmptyPlaylistState onAddPlaylist={mixer.addPlaylist} />
+        )}
+
+        {mixer.isLoaded && mixer.playlists.length > 0 && (
           <Grid gap={{ base: 5, md: 6 }}>
             <PlaylistManager
               isEditing={isEditing}

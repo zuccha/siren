@@ -1,6 +1,6 @@
 import { Button, Dialog, Input, Portal } from "@chakra-ui/react";
 import { PlusIcon } from "lucide-react";
-import { useState, type KeyboardEvent } from "react";
+import { type ReactNode, useState, type KeyboardEvent } from "react";
 
 import IconButton from "~/ui/icon-button";
 
@@ -9,10 +9,11 @@ import IconButton from "~/ui/icon-button";
 //------------------------------------------------------------------------------
 
 type AddPlaylistDialogProps = {
+  children?: ReactNode;
   onAddPlaylist: (name: string) => void;
 };
 
-export default function AddPlaylistDialog({ onAddPlaylist }: AddPlaylistDialogProps) {
+export default function AddPlaylistDialog({ children, onAddPlaylist }: AddPlaylistDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [playlistName, setPlaylistName] = useState("");
 
@@ -40,7 +41,7 @@ export default function AddPlaylistDialog({ onAddPlaylist }: AddPlaylistDialogPr
   return (
     <Dialog.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
       <Dialog.Trigger asChild>
-        <IconButton Icon={PlusIcon} aria-label="Add playlist" size="xs" />
+        {children ?? <IconButton Icon={PlusIcon} aria-label="Add playlist" size="xs" />}
       </Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />
