@@ -1,11 +1,12 @@
 import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import EmptyPlaylistState from "~/components/empty-playlist-state";
 import MasterVolumeControl from "~/components/master-volume-control";
 import PlaylistManager from "~/components/playlist-manager";
 import TrackLibraryDrawer from "~/components/track-library-drawer";
 import TrackSection from "~/components/track-section";
+import useGlobalHotkeys from "~/hooks/use-global-hotkeys";
 import useTrackMixer from "~/hooks/use-track-mixer";
 import type { Track, TrackKind } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
@@ -28,6 +29,12 @@ function getAvailableTracks(tracks: Track[], playlistTracks: Track[], kind: Trac
 function App() {
   const [isEditing, setIsEditing] = useState(false);
   const mixer = useTrackMixer();
+  const toggleEditMode = useCallback(() => setIsEditing((current) => !current), []);
+
+  useGlobalHotkeys({
+    onEditToggle: toggleEditMode,
+    onPauseToggle: mixer.togglePauseAll,
+  });
 
   return (
     <Box minH="100vh" bg="bg.muted" color="fg">
