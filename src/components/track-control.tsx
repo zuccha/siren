@@ -1,8 +1,9 @@
 import { Box, Button, Flex, Grid, Heading } from "@chakra-ui/react";
-import { PauseIcon, PlayIcon, Trash2Icon } from "lucide-react";
+import { PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 
 import type { Track } from "~/sound/tracks";
+import IconButton from "~/ui/icon-button";
 
 import VolumeControl from "./volume-control";
 
@@ -34,14 +35,31 @@ export default function TrackControl({
       bg="bg.panel"
       borderColor={isPlaying ? "fg" : "border"}
       borderWidth="1px"
+      position="relative"
       px={3}
       py={2}
       rounded="sm"
     >
+      <IconButton
+        Icon={XIcon}
+        aria-label={`Delete ${track.name}`}
+        colorPalette="red"
+        minH={6}
+        minW={6}
+        onClick={() => onRemove(track)}
+        position="absolute"
+        right={0}
+        size="2xs"
+        top={0}
+        transform="translate(50%, -50%)"
+        variant="solid"
+        zIndex={1}
+      />
+
       <Grid
         alignItems="center"
         gap={3}
-        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto auto"
+        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
       >
         <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
           <DynamicIcon name={track.icon} size={18} />
@@ -62,15 +80,6 @@ export default function TrackControl({
         >
           <PlayStateIcon size={14} />
           {isPlaying ? "Stop" : "Play"}
-        </Button>
-
-        <Button
-          aria-label={`Delete ${track.name}`}
-          onClick={() => onRemove(track)}
-          size="xs"
-          variant="ghost"
-        >
-          <Trash2Icon size={14} />
         </Button>
       </Grid>
     </Box>
