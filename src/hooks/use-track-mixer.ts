@@ -23,6 +23,7 @@ import {
   reorderLocalPlaylistTracks,
   saveLocalPlaylist,
   saveLocalTrack,
+  updateLocalPlaylist,
   updateLocalTrack,
 } from "~/sound/local-tracks";
 import {
@@ -195,6 +196,25 @@ export default function useTrackMixer() {
         playlists: sortPlaylists([...previous.playlists, playlist]),
       }));
       setSelectedPlaylistId(playlist.id);
+    },
+    [updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
+  // Edit Playlist
+  //------------------------------------------------------------------------------
+
+  const editPlaylist = useCallback(
+    (playlistId: string, name: string) => {
+      const playlist = updateLocalPlaylist(playlistId, name);
+      if (!playlist) return;
+
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: sortPlaylists(
+          previous.playlists.map((item) => (item.id === playlist.id ? playlist : item)),
+        ),
+      }));
     },
     [updateLibrary],
   );
@@ -535,6 +555,7 @@ export default function useTrackMixer() {
     addPlaylist,
     addTrackToPlaylist,
     deleteTrack,
+    editPlaylist,
     editTrack,
     isLoaded: library !== undefined,
     isMasterMuted,

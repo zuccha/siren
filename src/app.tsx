@@ -63,6 +63,7 @@ function App() {
               playlists={mixer.playlists}
               selectedPlaylistId={mixer.selectedPlaylistId}
               onAddPlaylist={mixer.addPlaylist}
+              onEditPlaylist={mixer.editPlaylist}
               onRemovePlaylist={mixer.removePlaylist}
               onSelectPlaylist={mixer.setSelectedPlaylistId}
             />
@@ -70,7 +71,7 @@ function App() {
               <TrackSection
                 defaultIcon="music"
                 kind="ambience"
-                title="Ambience / Music"
+                title="Ambience"
                 availableTracks={getAvailableTracks(
                   mixer.tracks,
                   mixer.trackLibrary.ambienceTracks,

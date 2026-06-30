@@ -1,9 +1,10 @@
-import { Box, Button, HStack } from "@chakra-ui/react";
+import { Button, HStack } from "@chakra-ui/react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
 
 import AddPlaylistDialog from "./add-playlist-dialog";
 import DeletePlaylistButton from "./delete-playlist-button";
+import EditPlaylistDialog from "./edit-playlist-dialog";
 
 //------------------------------------------------------------------------------
 // Playlist Manager
@@ -14,6 +15,7 @@ type PlaylistManagerProps = {
   playlists: TrackPlaylist[];
   selectedPlaylistId: string | undefined;
   onAddPlaylist: (name: string) => void;
+  onEditPlaylist: (playlistId: string, name: string) => void;
   onRemovePlaylist: (playlistId: string) => void;
   onSelectPlaylist: (playlistId: string) => void;
 };
@@ -23,9 +25,12 @@ export default function PlaylistManager({
   playlists,
   selectedPlaylistId,
   onAddPlaylist,
+  onEditPlaylist,
   onRemovePlaylist,
   onSelectPlaylist,
 }: PlaylistManagerProps) {
+  const selectedPlaylist = playlists.find((playlist) => playlist.id === selectedPlaylistId);
+
   return (
     <HStack align="start" gap={3} justify="space-between" minW={0}>
       <HStack flex={1} gap={2} minW={0} overflowX="auto">
@@ -61,7 +66,6 @@ export default function PlaylistManager({
                 borderEndRadius={isEditing ? 0 : "full"}
                 borderStartRadius="full"
                 color="inherit"
-                h={7}
                 onClick={() => onSelectPlaylist(playlist.id)}
                 ps={3}
                 pe={isEditing ? 1 : 3}
@@ -84,9 +88,12 @@ export default function PlaylistManager({
           );
         })}
       </HStack>
-      <Box flexShrink={0}>
+      <HStack flexShrink={0} gap={2}>
+        {isEditing && (
+          <EditPlaylistDialog playlist={selectedPlaylist} onEditPlaylist={onEditPlaylist} />
+        )}
         <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
-      </Box>
+      </HStack>
     </HStack>
   );
 }
