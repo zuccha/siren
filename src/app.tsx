@@ -1,23 +1,55 @@
-import { Box, Container, Flex, Grid, Heading } from "@chakra-ui/react";
+import { Box, Container, Flex, Grid, Heading, Text } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TrackSection from "~/components/track-section";
-import { type ActiveSound, createSound, fadeOutAndStop, stopSound } from "~/sound/audio";
-import { type Track, ambienceTracks, environmentTracks, tracks } from "~/sound/tracks";
+import {
+  type ActiveSound,
+  createSound,
+  fadeOutAndStop,
+  fadeSoundTo,
+  stopSound,
+} from "~/sound/audio";
+import { type Track, loadTracks } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
+
+//------------------------------------------------------------------------------
+// Track Library
+//------------------------------------------------------------------------------
+
+type TrackLibrary = {
+  ambienceTracks: Track[];
+  environmentTracks: Track[];
+  tracks: Track[];
+};
+
+const emptyTracks: Track[] = [];
 
 //------------------------------------------------------------------------------
 // App
 //------------------------------------------------------------------------------
 
 function App() {
+  const [trackLibrary, setTrackLibrary] = useState<TrackLibrary>();
+  const [loadError, setLoadError] = useState<string>();
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
-  const [volumes, setVolumes] = useState<Record<string, number>>(() =>
-    Object.fromEntries(tracks.map((track) => [track.id, track.initialVolume])),
-  );
+  const [volumes, setVolumes] = useState<Record<string, number>>({});
 
   const activeSounds = useRef(new Map<string, ActiveSound>());
-  const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), []);
+  const tracks = trackLibrary?.tracks ?? emptyTracks;
+  const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), [tracks]);
+
+  useEffect(() => {
+    void loadTracks()
+      .then((loadedTracks) => {
+        setTrackLibrary(loadedTracks);
+        setVolumes(
+          Object.fromEntries(loadedTracks.tracks.map((track) => [track.id, track.initialVolume])),
+        );
+      })
+      .catch((error: unknown) => {
+        setLoadError(error instanceof Error ? error.message : "Could not load track manifest");
+      });
+  }, []);
 
   const stopTrack = useCallback(
     (trackId: string) => {
@@ -68,7 +100,7 @@ function App() {
   const setTrackVolume = useCallback((trackId: string, volume: number) => {
     setVolumes((previous) => ({ ...previous, [trackId]: volume }));
     const sound = activeSounds.current.get(trackId);
-    if (sound) sound.output.gain.value = volume / 100;
+    if (sound) fadeSoundTo(sound, volume, 0.12);
   }, []);
 
   useEffect(() => {
@@ -92,24 +124,30 @@ function App() {
           <ThemeButton />
         </Flex>
 
-        <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 5, md: 6 }}>
-          <TrackSection
-            title="Ambience / Music"
-            tracks={ambienceTracks}
-            playingIds={playingIds}
-            volumes={volumes}
-            onToggle={toggleTrack}
-            onVolumeChange={setTrackVolume}
-          />
-          <TrackSection
-            title="Environment"
-            tracks={environmentTracks}
-            playingIds={playingIds}
-            volumes={volumes}
-            onToggle={toggleTrack}
-            onVolumeChange={setTrackVolume}
-          />
-        </Grid>
+        {loadError && <Text color="fg.error">{loadError}</Text>}
+
+        {!trackLibrary && !loadError && <Text color="fg.muted">Loading tracks...</Text>}
+
+        {trackLibrary && (
+          <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 5, md: 6 }}>
+            <TrackSection
+              title="Ambience / Music"
+              tracks={trackLibrary.ambienceTracks}
+              playingIds={playingIds}
+              volumes={volumes}
+              onToggle={toggleTrack}
+              onVolumeChange={setTrackVolume}
+            />
+            <TrackSection
+              title="Environment"
+              tracks={trackLibrary.environmentTracks}
+              playingIds={playingIds}
+              volumes={volumes}
+              onToggle={toggleTrack}
+              onVolumeChange={setTrackVolume}
+            />
+          </Grid>
+        )}
       </Container>
     </Box>
   );

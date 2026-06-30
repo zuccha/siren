@@ -1,0 +1,48 @@
+{
+  "ambience": [
+    {
+      "id": "calm",
+      "name": "Calm",
+      "src": "/sounds/ambience/calm.mp3",
+      "icon": "music",
+      "initialVolume": 52
+    },
+    {
+      "id": "action",
+      "name": "Action",
+      "src": "/sounds/ambience/action.mp3",
+      "icon": "flame",
+      "initialVolume": 48
+    },
+    {
+      "id": "combat",
+      "name": "Combat",
+      "src": "/sounds/ambience/combat.mp3",
+      "icon": "swords",
+      "initialVolume": 46
+    }
+  ],
+  "environment": [
+    {
+      "id": "rain",
+      "name": "Rain",
+      "src": "/sounds/environment/rain.mp3",
+      "icon": "rain",
+      "initialVolume": 38
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "src": "/sounds/environment/wind.mp3",
+      "icon": "wind",
+      "initialVolume": 32
+    },
+    {
+      "id": "forest",
+      "name": "Forest",
+      "src": "/sounds/environment/forest.mp3",
+      "icon": "trees",
+      "initialVolume": 28
+    }
+  ]
+}

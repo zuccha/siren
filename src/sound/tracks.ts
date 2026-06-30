@@ -1,10 +1,24 @@
-import { CloudRainIcon, FlameIcon, MusicIcon, SwordsIcon, TreesIcon, WindIcon } from "lucide-react";
+import {
+  CloudRainIcon,
+  FlameIcon,
+  MusicIcon,
+  SwordsIcon,
+  TreesIcon,
+  WindIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 //------------------------------------------------------------------------------
 // Track Kind
 //------------------------------------------------------------------------------
 
 export type TrackKind = "ambience" | "environment";
+
+//------------------------------------------------------------------------------
+// Track Icon
+//------------------------------------------------------------------------------
+
+export type TrackIcon = "music" | "flame" | "swords" | "rain" | "wind" | "trees";
 
 //------------------------------------------------------------------------------
 // Track
@@ -14,68 +28,73 @@ export type Track = {
   id: string;
   kind: TrackKind;
   name: string;
-  icon: typeof MusicIcon;
+  src: string;
+  icon: LucideIcon;
   initialVolume: number;
 };
 
 //------------------------------------------------------------------------------
-// Ambience Tracks
+// Track Manifest
 //------------------------------------------------------------------------------
 
-export const ambienceTracks: Track[] = [
-  {
-    id: "calm",
-    kind: "ambience",
-    name: "Calm",
-    icon: MusicIcon,
-    initialVolume: 52,
-  },
-  {
-    id: "action",
-    kind: "ambience",
-    name: "Action",
-    icon: FlameIcon,
-    initialVolume: 48,
-  },
-  {
-    id: "combat",
-    kind: "ambience",
-    name: "Combat",
-    icon: SwordsIcon,
-    initialVolume: 46,
-  },
-];
+export type TrackManifest = {
+  ambience: TrackManifestItem[];
+  environment: TrackManifestItem[];
+};
 
 //------------------------------------------------------------------------------
-// Environment Tracks
+// Track Manifest Item
 //------------------------------------------------------------------------------
 
-export const environmentTracks: Track[] = [
-  {
-    id: "rain",
-    kind: "environment",
-    name: "Rain",
-    icon: CloudRainIcon,
-    initialVolume: 38,
-  },
-  {
-    id: "wind",
-    kind: "environment",
-    name: "Wind",
-    icon: WindIcon,
-    initialVolume: 32,
-  },
-  {
-    id: "forest",
-    kind: "environment",
-    name: "Forest",
-    icon: TreesIcon,
-    initialVolume: 28,
-  },
-];
+type TrackManifestItem = {
+  id: string;
+  name: string;
+  src: string;
+  icon?: TrackIcon;
+  initialVolume?: number;
+};
+
+const iconByName: Record<TrackIcon, LucideIcon> = {
+  flame: FlameIcon,
+  music: MusicIcon,
+  rain: CloudRainIcon,
+  swords: SwordsIcon,
+  trees: TreesIcon,
+  wind: WindIcon,
+};
 
 //------------------------------------------------------------------------------
-// Tracks
+// Load Tracks
 //------------------------------------------------------------------------------
 
-export const tracks = [...ambienceTracks, ...environmentTracks];
+export async function loadTracks() {
+  const response = await fetch("/sounds/tracks.json");
+  if (!response.ok) throw new Error(`Could not load track manifest: ${response.status}`);
+
+  const manifest = (await response.json()) as TrackManifest;
+  const ambienceTracks = manifest.ambience.map((track) => createTrack(track, "ambience", "music"));
+  const environmentTracks = manifest.environment.map((track) =>
+    createTrack(track, "environment", "wind"),
+  );
+
+  return {
+    ambienceTracks,
+    environmentTracks,
+    tracks: [...ambienceTracks, ...environmentTracks],
+  };
+}
+
+//------------------------------------------------------------------------------
+// Create Track
+//------------------------------------------------------------------------------
+
+function createTrack(track: TrackManifestItem, kind: TrackKind, fallbackIcon: TrackIcon): Track {
+  return {
+    id: track.id,
+    kind,
+    name: track.name,
+    src: track.src,
+    icon: iconByName[track.icon ?? fallbackIcon],
+    initialVolume: track.initialVolume ?? 50,
+  };
+}
