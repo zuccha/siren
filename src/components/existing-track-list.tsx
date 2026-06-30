@@ -1,6 +1,7 @@
-import { Button, Flex, Text } from "@chakra-ui/react";
-import { PlusIcon } from "lucide-react";
+import { Box, Button, Flex, Input, Stack, Text } from "@chakra-ui/react";
+import { PlusIcon, SearchIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { useState } from "react";
 
 import type { Track } from "~/sound/tracks";
 
@@ -14,40 +15,83 @@ type ExistingTrackListProps = {
 };
 
 export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackListProps) {
+  const [query, setQuery] = useState("");
+
   if (tracks.length === 0) return null;
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredTracks = (
+    normalizedQuery
+      ? tracks.filter((track) => track.name.toLowerCase().includes(normalizedQuery))
+      : tracks
+  ).toSorted((firstTrack, secondTrack) =>
+    firstTrack.name.localeCompare(secondTrack.name, undefined, { sensitivity: "base" }),
+  );
+
   return (
-    <Flex
-      borderColor="border"
+    <Box
+      bg="white"
+      borderColor="gray.200"
       borderWidth="1px"
-      gap={2}
-      maxH="9rem"
-      overflowY="auto"
-      p={2}
+      color="gray.900"
+      px={3}
+      py={2}
       rounded="sm"
-      wrap="wrap"
     >
-      {tracks.map((track) => (
-        <Button
-          key={track.id}
-          aria-label={`Add ${track.name}`}
-          onClick={() => onAddTrack(track)}
-          size="xs"
-          variant="outline"
-        >
-          <PlusIcon size={14} />
-          <DynamicIcon name={track.icon} size={14} />
-          <Text
-            as="span"
-            maxW="10rem"
-            overflow="hidden"
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
+      <Stack gap={2}>
+        <Box position="relative">
+          <Box
+            alignItems="center"
+            color="gray.500"
+            display="flex"
+            h="full"
+            left={2}
+            pointerEvents="none"
+            position="absolute"
+            top={0}
           >
-            {track.name}
+            <SearchIcon size={14} />
+          </Box>
+          <Input
+            aria-label="Filter existing tracks"
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder="Search existing tracks"
+            ps={7}
+            size="xs"
+            value={query}
+          />
+        </Box>
+
+        {filteredTracks.length > 0 ? (
+          <Flex gap={2} maxH="9rem" overflowY="auto" wrap="wrap">
+            {filteredTracks.map((track) => (
+              <Button
+                key={track.id}
+                aria-label={`Add ${track.name}`}
+                onClick={() => onAddTrack(track)}
+                size="xs"
+                variant="outline"
+              >
+                <PlusIcon size={14} />
+                <DynamicIcon name={track.icon} size={14} />
+                <Text
+                  as="span"
+                  maxW="10rem"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {track.name}
+                </Text>
+              </Button>
+            ))}
+          </Flex>
+        ) : (
+          <Text color="gray.500" fontSize="sm">
+            No existing tracks match.
           </Text>
-        </Button>
-      ))}
-    </Flex>
+        )}
+      </Stack>
+    </Box>
   );
 }

@@ -238,8 +238,8 @@ export default function TrackSection({
         </Box>
         {isEditing && (
           <Stack gap={2} mt={tracks.length > 0 ? 0 : 2}>
+            <TrackUpload defaultIcon={defaultIcon} kind={kind} onUpload={onUpload} />
             <ExistingTrackList tracks={availableTracks} onAddTrack={onAddTrack} />
-            <TrackUpload kind={kind} defaultIcon={defaultIcon} onUpload={onUpload} />
           </Stack>
         )}
       </Stack>

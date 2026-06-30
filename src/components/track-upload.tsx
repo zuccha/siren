@@ -28,6 +28,10 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
   const [fileUploadKey, setFileUploadKey] = useState(0);
   const [error, setError] = useState<string>();
 
+  //------------------------------------------------------------------------------
+  // Upload Track
+  //------------------------------------------------------------------------------
+
   const uploadTrack = async () => {
     if (!file) return;
 
@@ -44,10 +48,18 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
     }
   };
 
+  //------------------------------------------------------------------------------
+  // Select File
+  //------------------------------------------------------------------------------
+
   const selectFile = (selectedFile: File | undefined) => {
     setFile(selectedFile);
     if (selectedFile && !name) setName(removeFileExtension(selectedFile.name));
   };
+
+  //------------------------------------------------------------------------------
+  // Reset Form
+  //------------------------------------------------------------------------------
 
   const resetForm = () => {
     setFile(undefined);
