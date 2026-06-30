@@ -1,6 +1,6 @@
 import { Box, Heading, Stack } from "@chakra-ui/react";
 
-import type { LocalTrackInput } from "~/sound/local-tracks";
+import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 
 import TrackControl from "./track-control";
@@ -18,6 +18,7 @@ type TrackSectionProps = {
   isEditing: boolean;
   playingIds: Set<string>;
   volumes: Record<string, number>;
+  onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
   onRemove: (track: Track) => void;
   onToggle: (track: Track) => void;
   onUpload: (input: LocalTrackInput) => Promise<void>;
@@ -32,6 +33,7 @@ export default function TrackSection({
   isEditing,
   playingIds,
   volumes,
+  onEdit,
   onRemove,
   onToggle,
   onUpload,
@@ -50,6 +52,7 @@ export default function TrackSection({
             isEditing={isEditing}
             isPlaying={playingIds.has(track.id)}
             volume={volumes[track.id] ?? track.initialVolume}
+            onEdit={onEdit}
             onRemove={onRemove}
             onToggle={onToggle}
             onVolumeChange={onVolumeChange}

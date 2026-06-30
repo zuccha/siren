@@ -26,6 +26,16 @@ export type LocalTrackInput = {
   file: File;
 };
 
+//------------------------------------------------------------------------------
+// Local Track Update Input
+//------------------------------------------------------------------------------
+
+export type LocalTrackUpdateInput = {
+  name: string;
+  icon: string;
+  initialVolume: number;
+};
+
 const databaseName = "siren-local-tracks";
 const objectStoreName = "audio";
 const metadataStorageKey = "siren.localTracks";
@@ -62,6 +72,34 @@ export async function saveLocalTrack(input: LocalTrackInput) {
     },
     metadata.kind,
     getFallbackIcon(metadata.kind),
+  );
+}
+
+//------------------------------------------------------------------------------
+// Update Local Track
+//------------------------------------------------------------------------------
+
+export function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
+  const metadata = loadLocalTrackMetadata();
+  const nextMetadata = metadata.map((item) =>
+    item.id === track.id ? updateLocalTrackMetadata(item, input) : item,
+  );
+  const updatedMetadata = nextMetadata.find((item) => item.id === track.id);
+
+  saveLocalTrackMetadata(nextMetadata);
+
+  if (!updatedMetadata) return track;
+
+  return createTrack(
+    {
+      id: updatedMetadata.id,
+      name: updatedMetadata.name,
+      src: track.src,
+      icon: updatedMetadata.icon,
+      initialVolume: updatedMetadata.initialVolume,
+    },
+    updatedMetadata.kind,
+    getFallbackIcon(updatedMetadata.kind),
   );
 }
 
@@ -112,6 +150,22 @@ function createLocalTrackMetadata(input: LocalTrackInput): LocalTrackMetadata {
     initialVolume: input.initialVolume,
     fileName: input.file.name,
     blobKey: id,
+  };
+}
+
+//------------------------------------------------------------------------------
+// Update Local Track Metadata
+//------------------------------------------------------------------------------
+
+function updateLocalTrackMetadata(
+  metadata: LocalTrackMetadata,
+  input: LocalTrackUpdateInput,
+): LocalTrackMetadata {
+  return {
+    ...metadata,
+    name: input.name.trim() || metadata.name,
+    icon: input.icon.trim() || getFallbackIcon(metadata.kind),
+    initialVolume: input.initialVolume,
   };
 }
 

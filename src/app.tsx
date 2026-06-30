@@ -11,9 +11,11 @@ import {
 } from "~/sound/audio";
 import {
   type LocalTrackInput,
+  type LocalTrackUpdateInput,
   deleteLocalTrack,
   loadLocalTracks,
   saveLocalTrack,
+  updateLocalTrack,
 } from "~/sound/local-tracks";
 import { type Track } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
@@ -151,6 +153,29 @@ function App() {
     if (sound) fadeSoundTo(sound, volume, 0.12);
   }, []);
 
+  const editTrack = useCallback(
+    (track: Track, input: LocalTrackUpdateInput) => {
+      const updatedTrack = updateLocalTrack(track, input);
+
+      updateTrackLibrary((previous) => {
+        const ambienceTracks = previous.ambienceTracks.map((item) =>
+          item.id === updatedTrack.id ? updatedTrack : item,
+        );
+        const environmentTracks = previous.environmentTracks.map((item) =>
+          item.id === updatedTrack.id ? updatedTrack : item,
+        );
+
+        return {
+          ambienceTracks,
+          environmentTracks,
+          tracks: [...ambienceTracks, ...environmentTracks],
+        };
+      });
+      setTrackVolume(updatedTrack.id, updatedTrack.initialVolume);
+    },
+    [setTrackVolume, updateTrackLibrary],
+  );
+
   const removeTrack = useCallback(
     (track: Track) => {
       stopTrack(track.id);
@@ -210,6 +235,7 @@ function App() {
               isEditing={isEditing}
               playingIds={playingIds}
               volumes={volumes}
+              onEdit={editTrack}
               onRemove={removeTrack}
               onToggle={toggleTrack}
               onUpload={addLocalTrack}
@@ -223,6 +249,7 @@ function App() {
               isEditing={isEditing}
               playingIds={playingIds}
               volumes={volumes}
+              onEdit={editTrack}
               onRemove={removeTrack}
               onToggle={toggleTrack}
               onUpload={addLocalTrack}

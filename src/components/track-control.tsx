@@ -1,7 +1,9 @@
-import { Box, Button, Flex, Grid, Heading } from "@chakra-ui/react";
+import { Box, Button, Flex, Grid, Heading, Input } from "@chakra-ui/react";
 import { PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { useEffect, useState } from "react";
 
+import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import IconButton from "~/ui/icon-button";
 
@@ -16,6 +18,7 @@ type TrackControlProps = {
   isEditing: boolean;
   isPlaying: boolean;
   volume: number;
+  onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
   onRemove: (track: Track) => void;
   onToggle: (track: Track) => void;
   onVolumeChange: (trackId: string, volume: number) => void;
@@ -26,11 +29,48 @@ export default function TrackControl({
   isEditing,
   isPlaying,
   volume,
+  onEdit,
   onRemove,
   onToggle,
   onVolumeChange,
 }: TrackControlProps) {
   const PlayStateIcon = isPlaying ? PauseIcon : PlayIcon;
+  const [draftName, setDraftName] = useState(track.name);
+  const [draftIcon, setDraftIcon] = useState<string>(track.icon);
+
+  useEffect(() => {
+    setDraftName(track.name);
+    setDraftIcon(track.icon);
+  }, [track.icon, track.name]);
+
+  //------------------------------------------------------------------------------
+  // Commit Track Edits
+  //------------------------------------------------------------------------------
+
+  const commitTrackEdits = () => {
+    onEdit(track, {
+      name: draftName,
+      icon: draftIcon,
+      initialVolume: volume,
+    });
+  };
+
+  //------------------------------------------------------------------------------
+  // Edit Track Volume
+  //------------------------------------------------------------------------------
+
+  const editTrackVolume = (trackId: string, nextVolume: number) => {
+    if (!isEditing) {
+      onVolumeChange(trackId, nextVolume);
+      return;
+    }
+
+    onEdit(track, {
+      name: draftName,
+      icon: draftIcon,
+      initialVolume: nextVolume,
+    });
+  };
 
   return (
     <Box
@@ -69,11 +109,30 @@ export default function TrackControl({
           <DynamicIcon name={track.icon} size={18} />
         </Flex>
 
-        <Heading minW={0} size="sm">
-          {track.name}
-        </Heading>
+        {isEditing ? (
+          <Grid gap={2} minW={0} templateColumns="minmax(7rem, 1fr) minmax(5rem, 8rem)">
+            <Input
+              aria-label={`${track.name} name`}
+              onBlur={commitTrackEdits}
+              onChange={(event) => setDraftName(event.currentTarget.value)}
+              size="xs"
+              value={draftName}
+            />
+            <Input
+              aria-label={`${track.name} icon`}
+              onBlur={commitTrackEdits}
+              onChange={(event) => setDraftIcon(event.currentTarget.value)}
+              size="xs"
+              value={draftIcon}
+            />
+          </Grid>
+        ) : (
+          <Heading minW={0} size="sm">
+            {track.name}
+          </Heading>
+        )}
 
-        <VolumeControl track={track} volume={volume} onVolumeChange={onVolumeChange} />
+        <VolumeControl track={track} volume={volume} onVolumeChange={editTrackVolume} />
 
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
