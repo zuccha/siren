@@ -105,7 +105,6 @@ export default function TrackIconPicker({ label, value, onIconChange }: TrackIco
                 <DynamicIconButton
                   key={icon}
                   aria-label={`Select ${icon}`}
-                  colorPalette={selectedIcon === icon ? "teal" : undefined}
                   icon={icon}
                   onClick={() => selectIcon(icon)}
                   size="xs"

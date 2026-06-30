@@ -113,7 +113,6 @@ export default function TrackControl({
         <IconButton
           Icon={XIcon}
           aria-label={`Delete ${track.name}`}
-          colorPalette="red"
           minH={6}
           minW={6}
           onClick={() => onRemove(track)}
