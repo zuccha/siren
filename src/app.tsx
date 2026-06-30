@@ -1,4 +1,4 @@
-import { Box, Container, Flex, Grid, HStack, Heading } from "@chakra-ui/react";
+import { Box, Container, Flex, Grid, Heading, HStack } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 
 import EmptyPlaylistState from "~/components/empty-playlist-state";
@@ -40,11 +40,16 @@ function App() {
     <Box minH="100vh" bg="bg.muted" color="fg">
       <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
-          <Box>
-            <Heading as="h1" size={{ base: "xl", md: "2xl" }}>
-              Siren
-            </Heading>
-          </Box>
+          <Heading
+            as="h1"
+            fontFamily="Nautilus"
+            fontWeight="normal"
+            letterSpacing={0}
+            lineHeight={1}
+            size={{ base: "3xl", md: "4xl" }}
+          >
+            SirenSong
+          </Heading>
           <HStack gap={3}>
             <TrackLibraryDrawer tracks={mixer.tracks} onDeleteTrack={mixer.deleteTrack} />
             <EditModeSwitch isEditing={isEditing} onEditingChange={setIsEditing} />
