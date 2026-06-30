@@ -7,6 +7,8 @@ import type { Track } from "./tracks";
 export type ActiveSound = {
   audio: HTMLAudioElement;
   baseVolume: number;
+  isMasterMuted: boolean;
+  isMuted: boolean;
   masterVolume: number;
   stopTimerId?: number;
   volumeTimerId?: number;
@@ -21,12 +23,19 @@ export const musicFadeDuration = 1.8;
 export function createSound(
   track: Track,
   volume: number,
-  options: { fadeIn?: boolean; masterVolume?: number } = {},
+  options: {
+    fadeIn?: boolean;
+    isMasterMuted?: boolean;
+    isMuted?: boolean;
+    masterVolume?: number;
+  } = {},
 ): ActiveSound {
   const audio = new Audio(track.src);
   const sound = {
     audio,
     baseVolume: options.fadeIn ? 0 : volume,
+    isMasterMuted: options.isMasterMuted ?? false,
+    isMuted: options.isMuted ?? false,
     masterVolume: options.masterVolume ?? 100,
   };
 
@@ -65,6 +74,24 @@ export function resumeSound(sound: ActiveSound) {
 
 export function setSoundMasterVolume(sound: ActiveSound, volume: number) {
   sound.masterVolume = volume;
+  sound.audio.volume = getSoundVolume(sound);
+}
+
+//------------------------------------------------------------------------------
+// Set Sound Master Muted
+//------------------------------------------------------------------------------
+
+export function setSoundMasterMuted(sound: ActiveSound, isMuted: boolean) {
+  sound.isMasterMuted = isMuted;
+  sound.audio.volume = getSoundVolume(sound);
+}
+
+//------------------------------------------------------------------------------
+// Set Sound Muted
+//------------------------------------------------------------------------------
+
+export function setSoundMuted(sound: ActiveSound, isMuted: boolean) {
+  sound.isMuted = isMuted;
   sound.audio.volume = getSoundVolume(sound);
 }
 
@@ -147,6 +174,7 @@ function clearVolumeTimer(sound: ActiveSound) {
 //------------------------------------------------------------------------------
 
 function getSoundVolume(sound: ActiveSound) {
+  if (sound.isMuted || sound.isMasterMuted) return 0;
   return clampVolume((sound.baseVolume / 100) * (sound.masterVolume / 100));
 }
 

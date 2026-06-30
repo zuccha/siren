@@ -18,6 +18,7 @@ type TrackControlProps = {
   track: Track;
   isEditing: boolean;
   isDragging: boolean;
+  isMuted: boolean;
   isPlaying: boolean;
   volume: number;
   onDragEnd: () => void;
@@ -25,6 +26,7 @@ type TrackControlProps = {
   onDragStart: (event: DragEvent) => void;
   onDrop: (event: DragEvent) => void;
   onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
+  onMuteToggle: (trackId: string) => void;
   onRemove: (track: Track) => void;
   onToggle: (track: Track) => void;
   onVolumeChange: (trackId: string, volume: number) => void;
@@ -34,6 +36,7 @@ export default function TrackControl({
   track,
   isEditing,
   isDragging,
+  isMuted,
   isPlaying,
   volume,
   onDragEnd,
@@ -41,6 +44,7 @@ export default function TrackControl({
   onDragStart,
   onDrop,
   onEdit,
+  onMuteToggle,
   onRemove,
   onToggle,
   onVolumeChange,
@@ -174,7 +178,13 @@ export default function TrackControl({
           </Heading>
         )}
 
-        <VolumeControl track={track} volume={volume} onVolumeChange={editTrackVolume} />
+        <VolumeControl
+          track={track}
+          isMuted={isMuted}
+          volume={volume}
+          onMuteToggle={onMuteToggle}
+          onVolumeChange={editTrackVolume}
+        />
 
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}

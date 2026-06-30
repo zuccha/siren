@@ -71,10 +71,12 @@ function App() {
                 )}
                 tracks={mixer.trackLibrary.ambienceTracks}
                 isEditing={isEditing}
+                mutedTrackIds={mixer.mutedTrackIds}
                 playingIds={mixer.playingIds}
                 volumes={mixer.volumes}
                 onAddTrack={mixer.addTrackToPlaylist}
                 onEdit={mixer.editTrack}
+                onMuteToggle={mixer.toggleTrackMute}
                 onRemove={mixer.removeTrackFromPlaylist}
                 onReorder={mixer.reorderTracks}
                 onToggle={mixer.toggleTrack}
@@ -92,10 +94,12 @@ function App() {
                 )}
                 tracks={mixer.trackLibrary.environmentTracks}
                 isEditing={isEditing}
+                mutedTrackIds={mixer.mutedTrackIds}
                 playingIds={mixer.playingIds}
                 volumes={mixer.volumes}
                 onAddTrack={mixer.addTrackToPlaylist}
                 onEdit={mixer.editTrack}
+                onMuteToggle={mixer.toggleTrackMute}
                 onRemove={mixer.removeTrackFromPlaylist}
                 onReorder={mixer.reorderTracks}
                 onToggle={mixer.toggleTrack}
@@ -109,8 +113,10 @@ function App() {
       {mixer.isLoaded && (
         <MasterVolumeControl
           hasActiveTracks={mixer.playingIds.size > 0}
+          isMuted={mixer.isMasterMuted}
           isPaused={mixer.isPaused}
           volume={mixer.masterVolume}
+          onMuteToggle={mixer.toggleMasterMute}
           onPauseToggle={mixer.togglePauseAll}
           onVolumeChange={mixer.setMasterVolume}
         />

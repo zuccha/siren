@@ -1,5 +1,5 @@
 import { HStack, Text } from "@chakra-ui/react";
-import { PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
+import { PauseIcon, PlayIcon, Volume2Icon, VolumeXIcon } from "lucide-react";
 
 import IconButton from "~/ui/icon-button";
 import VolumeSlider from "~/ui/volume-slider";
@@ -10,19 +10,25 @@ import VolumeSlider from "~/ui/volume-slider";
 
 type MasterVolumeControlProps = {
   hasActiveTracks: boolean;
+  isMuted: boolean;
   isPaused: boolean;
   volume: number;
+  onMuteToggle: () => void;
   onPauseToggle: () => void;
   onVolumeChange: (volume: number) => void;
 };
 
 export default function MasterVolumeControl({
   hasActiveTracks,
+  isMuted,
   isPaused,
   volume,
+  onMuteToggle,
   onPauseToggle,
   onVolumeChange,
 }: MasterVolumeControlProps) {
+  const VolumeIcon = isMuted ? VolumeXIcon : Volume2Icon;
+
   return (
     <HStack
       bg="bg.panel"
@@ -49,7 +55,14 @@ export default function MasterVolumeControl({
         size="sm"
         variant="outline"
       />
-      <Volume2Icon size={16} />
+      <IconButton
+        Icon={VolumeIcon}
+        aria-label={isMuted ? "Unmute master volume" : "Mute master volume"}
+        color={isMuted ? "fg" : "fg.muted"}
+        onClick={onMuteToggle}
+        size="sm"
+        variant="ghost"
+      />
       <VolumeSlider
         aria-label="Master volume"
         minW={0}

@@ -7,7 +7,9 @@ import {
   fadeSoundTo,
   pauseSound,
   resumeSound,
+  setSoundMasterMuted,
   setSoundMasterVolume,
+  setSoundMuted,
   stopSound,
 } from "~/sound/audio";
 import {
@@ -133,8 +135,10 @@ function sortPlaylists(playlists: TrackPlaylist[]) {
 export default function useTrackMixer() {
   const [library, setLibrary] = useState<MixerLibrary>();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>();
+  const [isMasterMuted, setIsMasterMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [masterVolume, setMasterVolumeState] = useState(100);
+  const [mutedTrackIds, setMutedTrackIds] = useState<Set<string>>(() => new Set());
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
@@ -324,6 +328,8 @@ export default function useTrackMixer() {
 
       const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
         fadeIn: true,
+        isMasterMuted,
+        isMuted: mutedTrackIds.has(track.id),
         masterVolume,
       });
       if (isPaused) pauseSound(sound);
@@ -331,7 +337,7 @@ export default function useTrackMixer() {
       activeSounds.current.set(track.id, sound);
       setPlayingIds((previous) => new Set(previous).add(track.id));
     },
-    [isPaused, masterVolume, stopTrack, trackById, volumes],
+    [isMasterMuted, isPaused, masterVolume, mutedTrackIds, stopTrack, trackById, volumes],
   );
 
   //------------------------------------------------------------------------------
@@ -366,6 +372,41 @@ export default function useTrackMixer() {
     for (const sound of activeSounds.current.values()) {
       setSoundMasterVolume(sound, volume);
     }
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Toggle Master Mute
+  //------------------------------------------------------------------------------
+
+  const toggleMasterMute = useCallback(() => {
+    setIsMasterMuted((current) => {
+      const next = !current;
+
+      for (const sound of activeSounds.current.values()) {
+        setSoundMasterMuted(sound, next);
+      }
+
+      return next;
+    });
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Toggle Track Mute
+  //------------------------------------------------------------------------------
+
+  const toggleTrackMute = useCallback((trackId: string) => {
+    setMutedTrackIds((previous) => {
+      const next = new Set(previous);
+      const isMuted = !next.has(trackId);
+
+      if (isMuted) next.add(trackId);
+      else next.delete(trackId);
+
+      const sound = activeSounds.current.get(trackId);
+      if (sound) setSoundMuted(sound, isMuted);
+
+      return next;
+    });
   }, []);
 
   //------------------------------------------------------------------------------
@@ -445,6 +486,11 @@ export default function useTrackMixer() {
         const { [track.id]: _deletedVolume, ...nextVolumes } = previous;
         return nextVolumes;
       });
+      setMutedTrackIds((previous) => {
+        const next = new Set(previous);
+        next.delete(track.id);
+        return next;
+      });
     },
     [stopTrack, updateLibrary],
   );
@@ -491,8 +537,10 @@ export default function useTrackMixer() {
     deleteTrack,
     editTrack,
     isLoaded: library !== undefined,
+    isMasterMuted,
     isPaused,
     masterVolume,
+    mutedTrackIds,
     playlists,
     playingIds,
     removePlaylist,
@@ -503,8 +551,10 @@ export default function useTrackMixer() {
     setMasterVolume,
     setSelectedPlaylistId,
     setTrackVolume,
+    toggleMasterMute,
     togglePauseAll,
     toggleTrack,
+    toggleTrackMute,
     trackLibrary: library ? trackLibrary : emptyTrackLibrary,
     tracks,
     volumes,

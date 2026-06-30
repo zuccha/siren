@@ -32,10 +32,12 @@ type TrackSectionProps = {
   availableTracks: Track[];
   tracks: Track[];
   isEditing: boolean;
+  mutedTrackIds: Set<string>;
   playingIds: Set<string>;
   volumes: Record<string, number>;
   onAddTrack: (track: Track) => void;
   onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
+  onMuteToggle: (trackId: string) => void;
   onRemove: (track: Track) => void;
   onReorder: (
     kind: Track["kind"],
@@ -55,10 +57,12 @@ export default function TrackSection({
   availableTracks,
   tracks,
   isEditing,
+  mutedTrackIds,
   playingIds,
   volumes,
   onAddTrack,
   onEdit,
+  onMuteToggle,
   onRemove,
   onReorder,
   onToggle,
@@ -209,6 +213,7 @@ export default function TrackSection({
               track={track}
               isEditing={isEditing}
               isDragging={draggedTrackId === track.id}
+              isMuted={mutedTrackIds.has(track.id)}
               isPlaying={playingIds.has(track.id)}
               volume={volumes[track.id] ?? track.initialVolume}
               onDragEnd={endTrackDrag}
@@ -216,6 +221,7 @@ export default function TrackSection({
               onDragStart={(event) => startTrackDrag(event, track)}
               onDrop={(event) => dropTrack(event, track)}
               onEdit={onEdit}
+              onMuteToggle={onMuteToggle}
               onRemove={onRemove}
               onToggle={onToggle}
               onVolumeChange={onVolumeChange}
