@@ -10,13 +10,21 @@ import {
 import {
   type LocalTrackInput,
   type LocalTrackUpdateInput,
-  deleteLocalTrack,
-  loadLocalTracks,
-  reorderLocalTracks,
+  addLocalPlaylistTrack,
+  deleteLocalPlaylist,
+  loadLocalTrackLibrary,
+  removeLocalPlaylistTrack,
+  reorderLocalPlaylistTracks,
+  saveLocalPlaylist,
   saveLocalTrack,
   updateLocalTrack,
 } from "~/sound/local-tracks";
-import { type Track, type TrackDropPosition } from "~/sound/tracks";
+import {
+  type Track,
+  type TrackDropPosition,
+  type TrackKind,
+  type TrackPlaylist,
+} from "~/sound/tracks";
 
 //------------------------------------------------------------------------------
 // Track Library
@@ -28,13 +36,25 @@ type TrackLibrary = {
   tracks: Track[];
 };
 
+//------------------------------------------------------------------------------
+// Mixer Library
+//------------------------------------------------------------------------------
+
+type MixerLibrary = {
+  playlists: TrackPlaylist[];
+  tracks: Track[];
+};
+
+const emptyMixerLibrary: MixerLibrary = {
+  playlists: [],
+  tracks: [],
+};
+
 const emptyTrackLibrary: TrackLibrary = {
   ambienceTracks: [],
   environmentTracks: [],
   tracks: [],
 };
-
-const emptyTracks: Track[] = [];
 
 //------------------------------------------------------------------------------
 // Create Track Library
@@ -75,40 +95,140 @@ function reorderTrackList(
 }
 
 //------------------------------------------------------------------------------
+// Get Playlist Track Ids
+//------------------------------------------------------------------------------
+
+function getPlaylistTrackIds(playlist: TrackPlaylist | undefined, kind: TrackKind) {
+  if (!playlist) return [];
+  return kind === "ambience" ? playlist.ambienceTrackIds : playlist.environmentTrackIds;
+}
+
+//------------------------------------------------------------------------------
+// Set Playlist Track Ids
+//------------------------------------------------------------------------------
+
+function setPlaylistTrackIds(playlist: TrackPlaylist, kind: TrackKind, trackIds: string[]) {
+  if (kind === "ambience") return { ...playlist, ambienceTrackIds: trackIds };
+  return { ...playlist, environmentTrackIds: trackIds };
+}
+
+//------------------------------------------------------------------------------
+// Sort Playlists
+//------------------------------------------------------------------------------
+
+function sortPlaylists(playlists: TrackPlaylist[]) {
+  return [...playlists].sort((firstPlaylist, secondPlaylist) =>
+    firstPlaylist.name.localeCompare(secondPlaylist.name, undefined, { sensitivity: "base" }),
+  );
+}
+
+//------------------------------------------------------------------------------
 // Use Track Mixer
 //------------------------------------------------------------------------------
 
 export default function useTrackMixer() {
-  const [trackLibrary, setTrackLibrary] = useState<TrackLibrary>();
+  const [library, setLibrary] = useState<MixerLibrary>();
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>();
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
   const [volumes, setVolumes] = useState<Record<string, number>>({});
 
   const activeSounds = useRef(new Map<string, ActiveSound>());
-  const tracks = trackLibrary?.tracks ?? emptyTracks;
+  const loadedLibrary = library ?? emptyMixerLibrary;
+  const playlists = useMemo(
+    () => sortPlaylists(loadedLibrary.playlists),
+    [loadedLibrary.playlists],
+  );
+  const selectedPlaylist =
+    playlists.find((playlist) => playlist.id === selectedPlaylistId) ?? playlists[0];
+  const tracks = loadedLibrary.tracks;
   const trackById = useMemo(() => new Map(tracks.map((track) => [track.id, track])), [tracks]);
+  const trackLibrary = useMemo(() => {
+    const ambienceTracks = getPlaylistTrackIds(selectedPlaylist, "ambience")
+      .map((trackId) => trackById.get(trackId))
+      .filter((track): track is Track => Boolean(track));
+    const environmentTracks = getPlaylistTrackIds(selectedPlaylist, "environment")
+      .map((trackId) => trackById.get(trackId))
+      .filter((track): track is Track => Boolean(track));
+
+    return createTrackLibrary(ambienceTracks, environmentTracks);
+  }, [selectedPlaylist, trackById]);
 
   useEffect(() => {
-    void loadLocalTracks().then((localTracks) => {
-      const ambienceTracks = localTracks.filter((track) => track.kind === "ambience");
-      const environmentTracks = localTracks.filter((track) => track.kind === "environment");
-      const loadedTrackLibrary = createTrackLibrary(ambienceTracks, environmentTracks);
+    void loadLocalTrackLibrary().then((localLibrary) => {
+      const sortedPlaylists = sortPlaylists(localLibrary.playlists);
 
-      setTrackLibrary(loadedTrackLibrary);
+      setLibrary({ ...localLibrary, playlists: sortedPlaylists });
+      setSelectedPlaylistId(sortedPlaylists[0]?.id);
       setVolumes(
-        Object.fromEntries(
-          loadedTrackLibrary.tracks.map((track) => [track.id, track.initialVolume]),
-        ),
+        Object.fromEntries(localLibrary.tracks.map((track) => [track.id, track.initialVolume])),
       );
     });
   }, []);
 
   //------------------------------------------------------------------------------
-  // Update Track Library
+  // Update Library
   //------------------------------------------------------------------------------
 
-  const updateTrackLibrary = useCallback((updater: (previous: TrackLibrary) => TrackLibrary) => {
-    setTrackLibrary((previous) => updater(previous ?? emptyTrackLibrary));
+  const updateLibrary = useCallback((updater: (previous: MixerLibrary) => MixerLibrary) => {
+    setLibrary((previous) => updater(previous ?? emptyMixerLibrary));
   }, []);
+
+  //------------------------------------------------------------------------------
+  // Add Playlist
+  //------------------------------------------------------------------------------
+
+  const addPlaylist = useCallback(
+    (name: string) => {
+      const playlist = saveLocalPlaylist(name);
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: sortPlaylists([...previous.playlists, playlist]),
+      }));
+      setSelectedPlaylistId(playlist.id);
+    },
+    [updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
+  // Remove Playlist
+  //------------------------------------------------------------------------------
+
+  const removePlaylist = useCallback(
+    (playlistId: string) => {
+      deleteLocalPlaylist(playlistId);
+      updateLibrary((previous) => {
+        const playlists = previous.playlists.filter((playlist) => playlist.id !== playlistId);
+        setSelectedPlaylistId((current) => (current === playlistId ? playlists[0]?.id : current));
+
+        return { ...previous, playlists };
+      });
+    },
+    [updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
+  // Add Track To Playlist
+  //------------------------------------------------------------------------------
+
+  const addTrackToPlaylist = useCallback(
+    (track: Track) => {
+      if (!selectedPlaylist) return;
+
+      addLocalPlaylistTrack(selectedPlaylist.id, track);
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: previous.playlists.map((playlist) => {
+          if (playlist.id !== selectedPlaylist.id) return playlist;
+
+          const trackIds = getPlaylistTrackIds(playlist, track.kind);
+          if (trackIds.includes(track.id)) return playlist;
+
+          return setPlaylistTrackIds(playlist, track.kind, [...trackIds, track.id]);
+        }),
+      }));
+    },
+    [selectedPlaylist, updateLibrary],
+  );
 
   //------------------------------------------------------------------------------
   // Add Local Track
@@ -117,20 +237,46 @@ export default function useTrackMixer() {
   const addLocalTrack = useCallback(
     async (input: LocalTrackInput) => {
       const track = await saveLocalTrack(input);
+      if (selectedPlaylist) addLocalPlaylistTrack(selectedPlaylist.id, track);
 
-      updateTrackLibrary((previous) => {
-        const ambienceTracks =
-          track.kind === "ambience" ? [...previous.ambienceTracks, track] : previous.ambienceTracks;
-        const environmentTracks =
-          track.kind === "environment"
-            ? [...previous.environmentTracks, track]
-            : previous.environmentTracks;
-
-        return createTrackLibrary(ambienceTracks, environmentTracks);
-      });
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: previous.playlists.map((playlist) => {
+          if (playlist.id !== selectedPlaylist?.id) return playlist;
+          return setPlaylistTrackIds(playlist, track.kind, [
+            ...getPlaylistTrackIds(playlist, track.kind),
+            track.id,
+          ]);
+        }),
+        tracks: [...previous.tracks, track],
+      }));
       setVolumes((previous) => ({ ...previous, [track.id]: track.initialVolume }));
     },
-    [updateTrackLibrary],
+    [selectedPlaylist, updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
+  // Remove Track From Playlist
+  //------------------------------------------------------------------------------
+
+  const removeTrackFromPlaylist = useCallback(
+    (track: Track) => {
+      if (!selectedPlaylist) return;
+
+      removeLocalPlaylistTrack(selectedPlaylist.id, track.id);
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: previous.playlists.map((playlist) => {
+          if (playlist.id !== selectedPlaylist.id) return playlist;
+          return setPlaylistTrackIds(
+            playlist,
+            track.kind,
+            getPlaylistTrackIds(playlist, track.kind).filter((trackId) => trackId !== track.id),
+          );
+        }),
+      }));
+    },
+    [selectedPlaylist, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
@@ -209,19 +355,13 @@ export default function useTrackMixer() {
     (track: Track, input: LocalTrackUpdateInput) => {
       const updatedTrack = updateLocalTrack(track, input);
 
-      updateTrackLibrary((previous) => {
-        const ambienceTracks = previous.ambienceTracks.map((item) =>
-          item.id === updatedTrack.id ? updatedTrack : item,
-        );
-        const environmentTracks = previous.environmentTracks.map((item) =>
-          item.id === updatedTrack.id ? updatedTrack : item,
-        );
-
-        return createTrackLibrary(ambienceTracks, environmentTracks);
-      });
+      updateLibrary((previous) => ({
+        ...previous,
+        tracks: previous.tracks.map((item) => (item.id === updatedTrack.id ? updatedTrack : item)),
+      }));
       setTrackVolume(updatedTrack.id, updatedTrack.initialVolume);
     },
-    [setTrackVolume, updateTrackLibrary],
+    [setTrackVolume, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
@@ -229,51 +369,25 @@ export default function useTrackMixer() {
   //------------------------------------------------------------------------------
 
   const reorderTracks = useCallback(
-    (kind: Track["kind"], sourceId: string, targetId: string, position: TrackDropPosition) => {
-      updateTrackLibrary((previous) => {
-        const ambienceTracks =
-          kind === "ambience"
-            ? reorderTrackList(previous.ambienceTracks, sourceId, targetId, position)
-            : previous.ambienceTracks;
-        const environmentTracks =
-          kind === "environment"
-            ? reorderTrackList(previous.environmentTracks, sourceId, targetId, position)
-            : previous.environmentTracks;
+    (kind: TrackKind, sourceId: string, targetId: string, position: TrackDropPosition) => {
+      if (!selectedPlaylist) return;
 
-        reorderLocalTracks(
-          kind,
-          (kind === "ambience" ? ambienceTracks : environmentTracks).map((track) => track.id),
-        );
+      const sectionTracks =
+        kind === "ambience" ? trackLibrary.ambienceTracks : trackLibrary.environmentTracks;
+      const reorderedTracks = reorderTrackList(sectionTracks, sourceId, targetId, position);
+      const trackIds = reorderedTracks.map((track) => track.id);
 
-        return createTrackLibrary(ambienceTracks, environmentTracks);
-      });
+      reorderLocalPlaylistTracks(selectedPlaylist.id, kind, trackIds);
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: previous.playlists.map((playlist) =>
+          playlist.id === selectedPlaylist.id
+            ? setPlaylistTrackIds(playlist, kind, trackIds)
+            : playlist,
+        ),
+      }));
     },
-    [updateTrackLibrary],
-  );
-
-  //------------------------------------------------------------------------------
-  // Remove Track
-  //------------------------------------------------------------------------------
-
-  const removeTrack = useCallback(
-    (track: Track) => {
-      stopTrack(track.id);
-      void deleteLocalTrack(track.id);
-      URL.revokeObjectURL(track.src);
-
-      updateTrackLibrary((previous) => {
-        const ambienceTracks = previous.ambienceTracks.filter((item) => item.id !== track.id);
-        const environmentTracks = previous.environmentTracks.filter((item) => item.id !== track.id);
-
-        return createTrackLibrary(ambienceTracks, environmentTracks);
-      });
-      setVolumes((previous) => {
-        const next = { ...previous };
-        delete next[track.id];
-        return next;
-      });
-    },
-    [stopTrack, updateTrackLibrary],
+    [selectedPlaylist, trackLibrary.ambienceTracks, trackLibrary.environmentTracks, updateLibrary],
   );
 
   useEffect(() => {
@@ -287,14 +401,22 @@ export default function useTrackMixer() {
 
   return {
     addLocalTrack,
+    addPlaylist,
+    addTrackToPlaylist,
     editTrack,
-    isLoaded: trackLibrary !== undefined,
+    isLoaded: library !== undefined,
+    playlists,
     playingIds,
-    removeTrack,
+    removePlaylist,
+    removeTrackFromPlaylist,
     reorderTracks,
-    toggleTrack,
-    trackLibrary: trackLibrary ?? emptyTrackLibrary,
+    selectedPlaylist,
+    selectedPlaylistId,
+    setSelectedPlaylistId,
     setTrackVolume,
+    toggleTrack,
+    trackLibrary: library ? trackLibrary : emptyTrackLibrary,
+    tracks,
     volumes,
   };
 }

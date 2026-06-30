@@ -1,4 +1,4 @@
-import { createTrack, type Track, type TrackKind } from "./tracks";
+import { createTrack, type Track, type TrackKind, type TrackPlaylist } from "./tracks";
 
 //------------------------------------------------------------------------------
 // Local Track Metadata
@@ -12,6 +12,24 @@ type LocalTrackMetadata = {
   initialVolume: number;
   fileName: string;
   blobKey: string;
+};
+
+//------------------------------------------------------------------------------
+// Local Library Metadata
+//------------------------------------------------------------------------------
+
+type LocalLibraryMetadata = {
+  playlists: TrackPlaylist[];
+  tracks: LocalTrackMetadata[];
+};
+
+//------------------------------------------------------------------------------
+// Local Track Library
+//------------------------------------------------------------------------------
+
+export type LocalTrackLibrary = {
+  playlists: TrackPlaylist[];
+  tracks: Track[];
 };
 
 //------------------------------------------------------------------------------
@@ -38,17 +56,20 @@ export type LocalTrackUpdateInput = {
 
 const databaseName = "siren-local-tracks";
 const objectStoreName = "audio";
-const metadataStorageKey = "siren.localTracks";
+const libraryStorageKey = "siren.library";
 
 //------------------------------------------------------------------------------
-// Load Local Tracks
+// Load Local Track Library
 //------------------------------------------------------------------------------
 
-export async function loadLocalTracks() {
-  const metadata = loadLocalTrackMetadata();
-  const tracks = await Promise.all(metadata.map(loadLocalTrack));
+export async function loadLocalTrackLibrary(): Promise<LocalTrackLibrary> {
+  const metadata = loadLocalLibraryMetadata();
+  const tracks = await Promise.all(metadata.tracks.map(loadLocalTrack));
 
-  return tracks.filter((track): track is Track => Boolean(track));
+  return {
+    playlists: metadata.playlists,
+    tracks: tracks.filter((track): track is Track => Boolean(track)),
+  };
 }
 
 //------------------------------------------------------------------------------
@@ -59,20 +80,15 @@ export async function saveLocalTrack(input: LocalTrackInput) {
   if (!input.file.type.startsWith("audio/")) throw new Error("Local tracks must be audio files.");
 
   const metadata = createLocalTrackMetadata(input);
-  await writeAudioBlob(metadata.blobKey, input.file);
-  saveLocalTrackMetadata([...loadLocalTrackMetadata(), metadata]);
+  const libraryMetadata = loadLocalLibraryMetadata();
 
-  return createTrack(
-    {
-      id: metadata.id,
-      name: metadata.name,
-      src: URL.createObjectURL(input.file),
-      icon: metadata.icon,
-      initialVolume: metadata.initialVolume,
-    },
-    metadata.kind,
-    getFallbackIcon(metadata.kind),
-  );
+  await writeAudioBlob(metadata.blobKey, input.file);
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    tracks: [...libraryMetadata.tracks, metadata],
+  });
+
+  return createLocalTrackFromMetadata(metadata, URL.createObjectURL(input.file));
 }
 
 //------------------------------------------------------------------------------
@@ -80,41 +96,17 @@ export async function saveLocalTrack(input: LocalTrackInput) {
 //------------------------------------------------------------------------------
 
 export function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
-  const metadata = loadLocalTrackMetadata();
-  const nextMetadata = metadata.map((item) =>
+  const libraryMetadata = loadLocalLibraryMetadata();
+  const tracks = libraryMetadata.tracks.map((item) =>
     item.id === track.id ? updateLocalTrackMetadata(item, input) : item,
   );
-  const updatedMetadata = nextMetadata.find((item) => item.id === track.id);
+  const updatedMetadata = tracks.find((item) => item.id === track.id);
 
-  saveLocalTrackMetadata(nextMetadata);
+  saveLocalLibraryMetadata({ ...libraryMetadata, tracks });
 
   if (!updatedMetadata) return track;
 
-  return createTrack(
-    {
-      id: updatedMetadata.id,
-      name: updatedMetadata.name,
-      src: track.src,
-      icon: updatedMetadata.icon,
-      initialVolume: updatedMetadata.initialVolume,
-    },
-    updatedMetadata.kind,
-    getFallbackIcon(updatedMetadata.kind),
-  );
-}
-
-//------------------------------------------------------------------------------
-// Reorder Local Tracks
-//------------------------------------------------------------------------------
-
-export function reorderLocalTracks(kind: TrackKind, trackIds: string[]) {
-  const metadata = loadLocalTrackMetadata();
-  const metadataById = new Map(metadata.map((item) => [item.id, item]));
-  const reorderedMetadata = trackIds
-    .map((trackId) => metadataById.get(trackId))
-    .filter((item): item is LocalTrackMetadata => item !== undefined && item.kind === kind);
-
-  saveLocalTrackMetadata([...metadata.filter((item) => item.kind !== kind), ...reorderedMetadata]);
+  return createLocalTrackFromMetadata(updatedMetadata, track.src);
 }
 
 //------------------------------------------------------------------------------
@@ -122,10 +114,113 @@ export function reorderLocalTracks(kind: TrackKind, trackIds: string[]) {
 //------------------------------------------------------------------------------
 
 export async function deleteLocalTrack(trackId: string) {
-  const metadata = loadLocalTrackMetadata();
-  const track = metadata.find((item) => item.id === trackId);
+  const libraryMetadata = loadLocalLibraryMetadata();
+  const track = libraryMetadata.tracks.find((item) => item.id === trackId);
   if (track) await deleteAudioBlob(track.blobKey);
-  saveLocalTrackMetadata(metadata.filter((item) => item.id !== trackId));
+
+  saveLocalLibraryMetadata({
+    playlists: libraryMetadata.playlists.map((playlist) =>
+      removeTrackFromPlaylist(playlist, trackId),
+    ),
+    tracks: libraryMetadata.tracks.filter((item) => item.id !== trackId),
+  });
+}
+
+//------------------------------------------------------------------------------
+// Save Local Playlist
+//------------------------------------------------------------------------------
+
+export function saveLocalPlaylist(name: string) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+  const playlist = createPlaylist(name);
+
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: [...libraryMetadata.playlists, playlist],
+  });
+
+  return playlist;
+}
+
+//------------------------------------------------------------------------------
+// Update Local Playlist
+//------------------------------------------------------------------------------
+
+export function updateLocalPlaylist(playlistId: string, name: string) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+  const playlists = libraryMetadata.playlists.map((playlist) =>
+    playlist.id === playlistId ? { ...playlist, name: name.trim() || playlist.name } : playlist,
+  );
+
+  saveLocalLibraryMetadata({ ...libraryMetadata, playlists });
+
+  return playlists.find((playlist) => playlist.id === playlistId);
+}
+
+//------------------------------------------------------------------------------
+// Delete Local Playlist
+//------------------------------------------------------------------------------
+
+export function deleteLocalPlaylist(playlistId: string) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: libraryMetadata.playlists.filter((playlist) => playlist.id !== playlistId),
+  });
+}
+
+//------------------------------------------------------------------------------
+// Add Local Playlist Track
+//------------------------------------------------------------------------------
+
+export function addLocalPlaylistTrack(playlistId: string, track: Track) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: libraryMetadata.playlists.map((playlist) =>
+      playlist.id === playlistId ? addTrackToPlaylist(playlist, track) : playlist,
+    ),
+  });
+}
+
+//------------------------------------------------------------------------------
+// Remove Local Playlist Track
+//------------------------------------------------------------------------------
+
+export function removeLocalPlaylistTrack(playlistId: string, trackId: string) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: libraryMetadata.playlists.map((playlist) =>
+      playlist.id === playlistId ? removeTrackFromPlaylist(playlist, trackId) : playlist,
+    ),
+  });
+}
+
+//------------------------------------------------------------------------------
+// Reorder Local Playlist Tracks
+//------------------------------------------------------------------------------
+
+export function reorderLocalPlaylistTracks(
+  playlistId: string,
+  kind: TrackKind,
+  trackIds: string[],
+) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: libraryMetadata.playlists.map((playlist) => {
+      if (playlist.id !== playlistId) return playlist;
+
+      return {
+        ...playlist,
+        [getPlaylistTrackIdsKey(kind)]: trackIds,
+      };
+    }),
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -136,11 +231,19 @@ async function loadLocalTrack(metadata: LocalTrackMetadata) {
   const blob = await readAudioBlob(metadata.blobKey);
   if (!blob) return undefined;
 
+  return createLocalTrackFromMetadata(metadata, URL.createObjectURL(blob));
+}
+
+//------------------------------------------------------------------------------
+// Create Local Track From Metadata
+//------------------------------------------------------------------------------
+
+function createLocalTrackFromMetadata(metadata: LocalTrackMetadata, src: string) {
   return createTrack(
     {
       id: metadata.id,
       name: metadata.name,
-      src: URL.createObjectURL(blob),
+      src,
       icon: metadata.icon,
       initialVolume: metadata.initialVolume,
     },
@@ -154,7 +257,7 @@ async function loadLocalTrack(metadata: LocalTrackMetadata) {
 //------------------------------------------------------------------------------
 
 function createLocalTrackMetadata(input: LocalTrackInput): LocalTrackMetadata {
-  const id = `local-${input.kind}-${crypto.randomUUID()}`;
+  const id = `track-${crypto.randomUUID()}`;
 
   return {
     id,
@@ -184,26 +287,100 @@ function updateLocalTrackMetadata(
 }
 
 //------------------------------------------------------------------------------
-// Load Local Track Metadata
+// Create Playlist
 //------------------------------------------------------------------------------
 
-function loadLocalTrackMetadata() {
-  const serializedMetadata = localStorage.getItem(metadataStorageKey);
-  if (!serializedMetadata) return [];
+function createPlaylist(name: string): TrackPlaylist {
+  return {
+    id: `playlist-${crypto.randomUUID()}`,
+    name: name.trim() || "Untitled playlist",
+    ambienceTrackIds: [],
+    environmentTrackIds: [],
+  };
+}
+
+//------------------------------------------------------------------------------
+// Create Default Library Metadata
+//------------------------------------------------------------------------------
+
+function createDefaultLibraryMetadata(): LocalLibraryMetadata {
+  return {
+    playlists: [createPlaylist("Default")],
+    tracks: [],
+  };
+}
+
+//------------------------------------------------------------------------------
+// Add Track To Playlist
+//------------------------------------------------------------------------------
+
+function addTrackToPlaylist(playlist: TrackPlaylist, track: Track) {
+  const key = getPlaylistTrackIdsKey(track.kind);
+  if (playlist[key].includes(track.id)) return playlist;
+
+  return {
+    ...playlist,
+    [key]: [...playlist[key], track.id],
+  };
+}
+
+//------------------------------------------------------------------------------
+// Remove Track From Playlist
+//------------------------------------------------------------------------------
+
+function removeTrackFromPlaylist(playlist: TrackPlaylist, trackId: string): TrackPlaylist {
+  return {
+    ...playlist,
+    ambienceTrackIds: playlist.ambienceTrackIds.filter((id) => id !== trackId),
+    environmentTrackIds: playlist.environmentTrackIds.filter((id) => id !== trackId),
+  };
+}
+
+//------------------------------------------------------------------------------
+// Get Playlist Track Ids Key
+//------------------------------------------------------------------------------
+
+function getPlaylistTrackIdsKey(kind: TrackKind) {
+  return kind === "ambience" ? "ambienceTrackIds" : "environmentTrackIds";
+}
+
+//------------------------------------------------------------------------------
+// Load Local Library Metadata
+//------------------------------------------------------------------------------
+
+function loadLocalLibraryMetadata(): LocalLibraryMetadata {
+  const serializedMetadata = localStorage.getItem(libraryStorageKey);
+
+  if (!serializedMetadata) {
+    const metadata = createDefaultLibraryMetadata();
+    saveLocalLibraryMetadata(metadata);
+    return metadata;
+  }
 
   try {
-    return JSON.parse(serializedMetadata) as LocalTrackMetadata[];
+    const metadata = JSON.parse(serializedMetadata) as LocalLibraryMetadata;
+    if (metadata.playlists.length > 0) return metadata;
+
+    const metadataWithDefaultPlaylist = {
+      ...metadata,
+      playlists: createDefaultLibraryMetadata().playlists,
+    };
+
+    saveLocalLibraryMetadata(metadataWithDefaultPlaylist);
+    return metadataWithDefaultPlaylist;
   } catch {
-    return [];
+    const metadata = createDefaultLibraryMetadata();
+    saveLocalLibraryMetadata(metadata);
+    return metadata;
   }
 }
 
 //------------------------------------------------------------------------------
-// Save Local Track Metadata
+// Save Local Library Metadata
 //------------------------------------------------------------------------------
 
-function saveLocalTrackMetadata(metadata: LocalTrackMetadata[]) {
-  localStorage.setItem(metadataStorageKey, JSON.stringify(metadata));
+function saveLocalLibraryMetadata(metadata: LocalLibraryMetadata) {
+  localStorage.setItem(libraryStorageKey, JSON.stringify(metadata));
 }
 
 //------------------------------------------------------------------------------

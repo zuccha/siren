@@ -4,6 +4,7 @@ import { Fragment, useState, type DragEvent } from "react";
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track, TrackDropPosition } from "~/sound/tracks";
 
+import ExistingTrackList from "./existing-track-list";
 import TrackControl from "./track-control";
 import TrackUpload from "./track-upload";
 
@@ -27,10 +28,12 @@ type TrackSectionProps = {
   defaultIcon: string;
   kind: Track["kind"];
   title: string;
+  availableTracks: Track[];
   tracks: Track[];
   isEditing: boolean;
   playingIds: Set<string>;
   volumes: Record<string, number>;
+  onAddTrack: (track: Track) => void;
   onEdit: (track: Track, input: LocalTrackUpdateInput) => void;
   onRemove: (track: Track) => void;
   onReorder: (
@@ -48,10 +51,12 @@ export default function TrackSection({
   defaultIcon,
   kind,
   title,
+  availableTracks,
   tracks,
   isEditing,
   playingIds,
   volumes,
+  onAddTrack,
   onEdit,
   onRemove,
   onReorder,
@@ -208,7 +213,12 @@ export default function TrackSection({
             />
           )}
         </Box>
-        <TrackUpload kind={kind} defaultIcon={defaultIcon} onUpload={onUpload} />
+        {isEditing && (
+          <>
+            <ExistingTrackList tracks={availableTracks} onAddTrack={onAddTrack} />
+            <TrackUpload kind={kind} defaultIcon={defaultIcon} onUpload={onUpload} />
+          </>
+        )}
       </Stack>
     </Box>
   );
