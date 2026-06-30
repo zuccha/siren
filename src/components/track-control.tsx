@@ -45,7 +45,7 @@ export default function TrackControl({
           <DynamicIcon name={track.icon} size={18} />
         </Flex>
 
-        <Heading fontWeight={isPlaying ? "semibold" : "medium"} minW={0} size="sm">
+        <Heading minW={0} size="sm">
           {track.name}
         </Heading>
 
@@ -53,7 +53,7 @@ export default function TrackControl({
 
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
-          flexShrink={0}
+          minW="4.5rem"
           onClick={() => onToggle(track)}
           size="xs"
           variant={isPlaying ? "solid" : "outline"}
