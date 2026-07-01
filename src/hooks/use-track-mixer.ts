@@ -411,12 +411,26 @@ export default function useTrackMixer() {
   );
 
   //------------------------------------------------------------------------------
+  // Resume Active Sounds
+  //------------------------------------------------------------------------------
+
+  const resumeActiveSounds = useCallback(() => {
+    for (const sound of activeSounds.current.values()) {
+      resumeSound(sound);
+    }
+
+    setIsPaused(false);
+  }, []);
+
+  //------------------------------------------------------------------------------
   // Start Track
   //------------------------------------------------------------------------------
 
   const startTrack = useCallback(
     (track: Track) => {
       if (!selectedPlaylist) return;
+
+      if (isPaused) resumeActiveSounds();
 
       if (activePlaylistId.current && activePlaylistId.current !== selectedPlaylist.id) {
         fadeOutAllTracks();
@@ -435,7 +449,6 @@ export default function useTrackMixer() {
         isMuted: mutedTrackIds.has(track.id),
         masterVolume,
       });
-      if (isPaused) pauseSound(sound);
 
       activeSounds.current.set(track.id, sound);
       activePlaylistId.current = selectedPlaylist.id;
@@ -446,6 +459,7 @@ export default function useTrackMixer() {
       isPaused,
       masterVolume,
       mutedTrackIds,
+      resumeActiveSounds,
       selectedPlaylist,
       fadeOutAllTracks,
       stopTrack,
@@ -565,12 +579,8 @@ export default function useTrackMixer() {
   //------------------------------------------------------------------------------
 
   const resumeAll = useCallback(() => {
-    for (const sound of activeSounds.current.values()) {
-      resumeSound(sound);
-    }
-
-    setIsPaused(false);
-  }, []);
+    resumeActiveSounds();
+  }, [resumeActiveSounds]);
 
   //------------------------------------------------------------------------------
   // Toggle Pause All
