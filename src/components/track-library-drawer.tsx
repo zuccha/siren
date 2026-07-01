@@ -10,14 +10,16 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { LibraryIcon, SearchIcon, Trash2Icon } from "lucide-react";
+import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
+import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import IconButton from "~/ui/icon-button";
 
 import DeleteTrackDialog from "./delete-track-dialog";
+import EditTrackDialog from "./edit-track-dialog";
 
 //------------------------------------------------------------------------------
 // Track Library Drawer
@@ -26,10 +28,16 @@ import DeleteTrackDialog from "./delete-track-dialog";
 type TrackLibraryDrawerProps = {
   tracks: Track[];
   onDeleteTrack: (track: Track) => Promise<void>;
+  onEditTrack: (track: Track, input: LocalTrackUpdateInput) => Promise<void>;
 };
 
-export default function TrackLibraryDrawer({ tracks, onDeleteTrack }: TrackLibraryDrawerProps) {
+export default function TrackLibraryDrawer({
+  tracks,
+  onDeleteTrack,
+  onEditTrack,
+}: TrackLibraryDrawerProps) {
   const [query, setQuery] = useState("");
+  const [trackToEdit, setTrackToEdit] = useState<Track>();
   const [trackToDelete, setTrackToDelete] = useState<Track>();
   const normalizedQuery = query.trim().toLowerCase();
   const filteredTracks = (
@@ -122,22 +130,36 @@ export default function TrackLibraryDrawer({ tracks, onDeleteTrack }: TrackLibra
                             <DynamicIcon name={track.icon} size={18} />
                           </Flex>
                           <Box flex={1} minW={0}>
-                            <HStack gap={2} minW={0}>
-                              <Text fontSize="sm" fontWeight="medium" truncate>
-                                {track.name}
+                            <Stack gap={0.5} minW={0}>
+                              <HStack gap={2} minW={0}>
+                                <Text fontSize="sm" fontWeight="medium" truncate>
+                                  {track.name}
+                                </Text>
+                                <Badge flexShrink={0} size="sm" variant="subtle">
+                                  {track.kind}
+                                </Badge>
+                              </HStack>
+                              <Text color="fg.muted" fontSize="xs" truncate>
+                                {track.fileName}
                               </Text>
-                              <Badge flexShrink={0} size="sm" variant="subtle">
-                                {track.kind}
-                              </Badge>
-                            </HStack>
+                            </Stack>
                           </Box>
-                          <IconButton
-                            Icon={Trash2Icon}
-                            aria-label={`Delete ${track.name}`}
-                            onClick={() => setTrackToDelete(track)}
-                            size="xs"
-                            variant="ghost"
-                          />
+                          <HStack gap={0}>
+                            <IconButton
+                              Icon={PencilIcon}
+                              aria-label={`Edit ${track.name}`}
+                              onClick={() => setTrackToEdit(track)}
+                              size="xs"
+                              variant="ghost"
+                            />
+                            <IconButton
+                              Icon={Trash2Icon}
+                              aria-label={`Delete ${track.name}`}
+                              onClick={() => setTrackToDelete(track)}
+                              size="xs"
+                              variant="ghost"
+                            />
+                          </HStack>
                         </Flex>
                       ))}
                     </Stack>
@@ -154,6 +176,11 @@ export default function TrackLibraryDrawer({ tracks, onDeleteTrack }: TrackLibra
         track={trackToDelete}
         onCancel={() => setTrackToDelete(undefined)}
         onDelete={deleteTrack}
+      />
+      <EditTrackDialog
+        track={trackToEdit}
+        onCancel={() => setTrackToEdit(undefined)}
+        onEditTrack={onEditTrack}
       />
     </>
   );

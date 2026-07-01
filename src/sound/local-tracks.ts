@@ -52,6 +52,7 @@ export type LocalTrackUpdateInput = {
   name: string;
   icon: string;
   initialVolume: number;
+  file?: File;
 };
 
 const databaseName = "siren-local-tracks";
@@ -95,7 +96,11 @@ export async function saveLocalTrack(input: LocalTrackInput) {
 // Update Local Track
 //------------------------------------------------------------------------------
 
-export function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
+export async function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
+  if (input.file && !input.file.type.startsWith("audio/")) {
+    throw new Error("Local tracks must be audio files.");
+  }
+
   const libraryMetadata = loadLocalLibraryMetadata();
   const tracks = libraryMetadata.tracks.map((item) =>
     item.id === track.id ? updateLocalTrackMetadata(item, input) : item,
@@ -105,8 +110,12 @@ export function updateLocalTrack(track: Track, input: LocalTrackUpdateInput) {
   saveLocalLibraryMetadata({ ...libraryMetadata, tracks });
 
   if (!updatedMetadata) return track;
+  if (input.file) await writeAudioBlob(updatedMetadata.blobKey, input.file);
 
-  return createLocalTrackFromMetadata(updatedMetadata, track.src);
+  return createLocalTrackFromMetadata(
+    updatedMetadata,
+    input.file ? URL.createObjectURL(input.file) : track.src,
+  );
 }
 
 //------------------------------------------------------------------------------
@@ -246,6 +255,7 @@ function createLocalTrackFromMetadata(metadata: LocalTrackMetadata, src: string)
       src,
       icon: metadata.icon,
       initialVolume: metadata.initialVolume,
+      fileName: metadata.fileName,
     },
     metadata.kind,
     getFallbackIcon(metadata.kind),
@@ -283,6 +293,7 @@ function updateLocalTrackMetadata(
     name: input.name.trim() || metadata.name,
     icon: input.icon.trim() || getFallbackIcon(metadata.kind),
     initialVolume: input.initialVolume,
+    fileName: input.file?.name ?? metadata.fileName,
   };
 }
 

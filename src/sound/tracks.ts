@@ -29,6 +29,7 @@ export type Track = {
   src: string;
   icon: IconName;
   initialVolume: number;
+  fileName: string;
 };
 
 //------------------------------------------------------------------------------
@@ -52,6 +53,7 @@ export type TrackInput = {
   src: string;
   icon?: TrackIcon;
   initialVolume?: number;
+  fileName?: string;
 };
 
 const iconImportByName = dynamicIconImports as Record<string, unknown>;
@@ -68,6 +70,7 @@ export function createTrack(track: TrackInput, kind: TrackKind, fallbackIcon: Tr
     src: track.src,
     icon: getTrackIcon(track.icon ?? fallbackIcon, fallbackIcon),
     initialVolume: track.initialVolume ?? 50,
+    fileName: track.fileName ?? track.name,
   };
 }
 

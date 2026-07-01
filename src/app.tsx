@@ -51,7 +51,11 @@ function App() {
             SirenSong
           </Heading>
           <HStack gap={3}>
-            <TrackLibraryDrawer tracks={mixer.tracks} onDeleteTrack={mixer.deleteTrack} />
+            <TrackLibraryDrawer
+              tracks={mixer.tracks}
+              onDeleteTrack={mixer.deleteTrack}
+              onEditTrack={mixer.editTrack}
+            />
             <EditModeSwitch isEditing={isEditing} onEditingChange={setIsEditing} />
             <ThemeButton />
           </HStack>

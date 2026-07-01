@@ -467,8 +467,10 @@ export default function useTrackMixer() {
   //------------------------------------------------------------------------------
 
   const editTrack = useCallback(
-    (track: Track, input: LocalTrackUpdateInput) => {
-      const updatedTrack = updateLocalTrack(track, input);
+    async (track: Track, input: LocalTrackUpdateInput) => {
+      if (input.file && activeSounds.current.has(track.id)) stopTrack(track.id);
+
+      const updatedTrack = await updateLocalTrack(track, input);
 
       updateLibrary((previous) => ({
         ...previous,
@@ -476,7 +478,7 @@ export default function useTrackMixer() {
       }));
       setTrackVolume(updatedTrack.id, updatedTrack.initialVolume);
     },
-    [setTrackVolume, updateLibrary],
+    [setTrackVolume, stopTrack, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
