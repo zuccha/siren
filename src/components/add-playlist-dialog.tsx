@@ -41,7 +41,17 @@ export default function AddPlaylistDialog({ children, onAddPlaylist }: AddPlayli
   return (
     <Dialog.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
       <Dialog.Trigger asChild>
-        {children ?? <IconButton Icon={PlusIcon} aria-label="Add playlist" size="xs" />}
+        {children ?? (
+          <IconButton
+            Icon={PlusIcon}
+            aria-label="Add playlist"
+            borderColor="border"
+            borderWidth={1}
+            mr={2}
+            size="xs"
+            variant="subtle"
+          />
+        )}
       </Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />

@@ -70,13 +70,16 @@ function App() {
           <Grid gap={{ base: 5, md: 6 }}>
             <PlaylistManager
               isEditing={isEditing}
+              isScenePlaying={mixer.isScenePlaying}
               playingPlaylistId={mixer.playingPlaylistId}
               playlists={mixer.playlists}
+              sceneTrackCount={mixer.sceneTrackCount}
               selectedPlaylistId={mixer.selectedPlaylistId}
               onAddPlaylist={mixer.addPlaylist}
               onEditPlaylist={mixer.editPlaylist}
               onRemovePlaylist={mixer.removePlaylist}
               onSelectPlaylist={mixer.setSelectedPlaylistId}
+              onToggleScene={mixer.toggleScene}
             />
             <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={{ base: 5, md: 6 }}>
               <TrackSection

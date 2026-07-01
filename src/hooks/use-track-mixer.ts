@@ -130,6 +130,19 @@ function getTrackVolume(playlist: TrackPlaylist | undefined, track: Track) {
 }
 
 //------------------------------------------------------------------------------
+// Get Scene Tracks
+//------------------------------------------------------------------------------
+
+function getSceneTracks(trackLibrary: TrackLibrary) {
+  const ambienceTracks =
+    trackLibrary.ambienceTracks.length === 1 ? trackLibrary.ambienceTracks : [];
+
+  return [...ambienceTracks, ...trackLibrary.environmentTracks].filter(
+    (track) => !track.hasMissingAudio,
+  );
+}
+
+//------------------------------------------------------------------------------
 // Set Playlist Track Ids
 //------------------------------------------------------------------------------
 
@@ -200,6 +213,11 @@ export default function useTrackMixer() {
     return createTrackLibrary(ambienceTracks, environmentTracks);
   }, [selectedPlaylist, trackById]);
   const volumes = useMemo(() => getPlaylistVolumes(selectedPlaylist), [selectedPlaylist]);
+  const sceneTracks = useMemo(() => getSceneTracks(trackLibrary), [trackLibrary]);
+  const isScenePlaying =
+    sceneTracks.length > 0 &&
+    activePlaylistId.current === selectedPlaylist?.id &&
+    sceneTracks.every((track) => playingIds.has(track.id));
   const selectedPlaylistPlayingIds = useMemo(() => {
     if (activePlaylistId.current !== selectedPlaylist?.id) return new Set<string>();
     return playingIds;
@@ -527,6 +545,83 @@ export default function useTrackMixer() {
   );
 
   //------------------------------------------------------------------------------
+  // Start Scene
+  //------------------------------------------------------------------------------
+
+  const startScene = useCallback(() => {
+    if (!selectedPlaylist || sceneTracks.length === 0) return;
+
+    if (isPaused) resumeActiveSounds();
+
+    const isSwitchingPlaylist =
+      Boolean(activePlaylistId.current) && activePlaylistId.current !== selectedPlaylist.id;
+
+    if (isSwitchingPlaylist) {
+      fadeOutAllTracks();
+    }
+
+    const ambienceTrack = sceneTracks.find((track) => track.kind === "ambience");
+    if (ambienceTrack) {
+      for (const activeId of activeSounds.current.keys()) {
+        const activeTrack = trackById.get(activeId);
+        if (activeTrack?.kind === "ambience" && activeId !== ambienceTrack.id) {
+          stopTrack(activeId);
+        }
+      }
+    }
+
+    const nextPlayingIds = isSwitchingPlaylist ? new Set<string>() : new Set(playingIds);
+
+    for (const track of sceneTracks) {
+      if (activeSounds.current.has(track.id)) continue;
+
+      const sound = createSound(track, getTrackVolume(selectedPlaylist, track), {
+        fadeIn: true,
+        isMasterMuted,
+        isMuted: mutedTrackIds.has(track.id),
+        masterVolume,
+      });
+
+      activeSounds.current.set(track.id, sound);
+      nextPlayingIds.add(track.id);
+    }
+
+    activePlaylistId.current = selectedPlaylist.id;
+    setPlayingIds(nextPlayingIds);
+  }, [
+    fadeOutAllTracks,
+    isMasterMuted,
+    isPaused,
+    masterVolume,
+    mutedTrackIds,
+    playingIds,
+    resumeActiveSounds,
+    sceneTracks,
+    selectedPlaylist,
+    stopTrack,
+    trackById,
+  ]);
+
+  //------------------------------------------------------------------------------
+  // Stop Scene
+  //------------------------------------------------------------------------------
+
+  const stopScene = useCallback(() => {
+    for (const track of sceneTracks) {
+      stopTrack(track.id);
+    }
+  }, [sceneTracks, stopTrack]);
+
+  //------------------------------------------------------------------------------
+  // Toggle Scene
+  //------------------------------------------------------------------------------
+
+  const toggleScene = useCallback(() => {
+    if (isScenePlaying) stopScene();
+    else startScene();
+  }, [isScenePlaying, startScene, stopScene]);
+
+  //------------------------------------------------------------------------------
   // Set Track Volume
   //------------------------------------------------------------------------------
 
@@ -737,6 +832,7 @@ export default function useTrackMixer() {
     isLoaded: library !== undefined,
     isMasterMuted,
     isPaused,
+    isScenePlaying,
     masterVolume,
     mutedTrackIds,
     playlists,
@@ -750,8 +846,10 @@ export default function useTrackMixer() {
     setMasterVolume,
     setSelectedPlaylistId: selectPlaylist,
     setTrackVolume,
+    sceneTrackCount: sceneTracks.length,
     toggleMasterMute,
     togglePauseAll,
+    toggleScene,
     toggleTrack,
     toggleTrackMute,
     trackLibrary: library ? trackLibrary : emptyTrackLibrary,

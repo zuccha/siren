@@ -1,5 +1,5 @@
 import { Button, HStack } from "@chakra-ui/react";
-import { Volume2Icon } from "lucide-react";
+import { PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
 
@@ -13,30 +13,39 @@ import EditPlaylistDialog from "./edit-playlist-dialog";
 
 type PlaylistManagerProps = {
   isEditing: boolean;
+  isScenePlaying: boolean;
   playingPlaylistId: string | undefined;
   playlists: TrackPlaylist[];
+  sceneTrackCount: number;
   selectedPlaylistId: string | undefined;
   onAddPlaylist: (name: string) => void;
   onEditPlaylist: (playlistId: string, name: string) => void;
   onRemovePlaylist: (playlistId: string) => void;
+  onToggleScene: () => void;
   onSelectPlaylist: (playlistId: string) => void;
 };
 
 export default function PlaylistManager({
   isEditing,
+  isScenePlaying,
   playingPlaylistId,
   playlists,
+  sceneTrackCount,
   selectedPlaylistId,
   onAddPlaylist,
   onEditPlaylist,
   onRemovePlaylist,
+  onToggleScene,
   onSelectPlaylist,
 }: PlaylistManagerProps) {
   const selectedPlaylist = playlists.find((playlist) => playlist.id === selectedPlaylistId);
+  const SceneIcon = isScenePlaying ? PauseIcon : PlayIcon;
 
   return (
     <HStack align="start" gap={3} justify="space-between" minW={0}>
       <HStack flex={1} gap={2} minW={0} overflowX="auto">
+        <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
+
         {playlists.map((playlist) => {
           const isSelected = playlist.id === selectedPlaylistId;
           const isPlaying = playlist.id === playingPlaylistId;
@@ -94,10 +103,18 @@ export default function PlaylistManager({
         })}
       </HStack>
       <HStack flexShrink={0} gap={2}>
+        <Button
+          disabled={sceneTrackCount === 0}
+          onClick={onToggleScene}
+          size="sm"
+          variant="outline"
+        >
+          <SceneIcon size={16} />
+          {isScenePlaying ? "Pause Scene" : "Play Scene"}
+        </Button>
         {isEditing && (
           <EditPlaylistDialog playlist={selectedPlaylist} onEditPlaylist={onEditPlaylist} />
         )}
-        <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
       </HStack>
     </HStack>
   );
