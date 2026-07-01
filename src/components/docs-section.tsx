@@ -1,4 +1,4 @@
-import { Grid, Stack, Text, type GridProps } from "@chakra-ui/react";
+import { Stack, Text, type StackProps } from "@chakra-ui/react";
 
 import type { ReactNode } from "react";
 
@@ -6,37 +6,18 @@ import type { ReactNode } from "react";
 // Docs Section
 //------------------------------------------------------------------------------
 
-type DocsSectionProps = Omit<GridProps, "children"> & {
+type DocsSectionProps = Omit<StackProps, "children"> & {
   children: ReactNode;
   title: string;
-  visual: ReactNode;
-  visualPosition?: "left" | "right";
+  visual?: ReactNode;
 };
 
-export default function DocsSection({
-  children,
-  title,
-  visual,
-  visualPosition = "right",
-  ...rest
-}: DocsSectionProps) {
-  const desktopAreas = visualPosition === "left" ? `"visual content"` : `"content visual"`;
-  const desktopColumns =
-    visualPosition === "left" ? "max-content minmax(0, 1fr)" : "minmax(0, 1fr) max-content";
-
+export default function DocsSection({ children, title, visual, ...rest }: DocsSectionProps) {
   return (
-    <Grid
-      alignItems="center"
-      gap={{ base: 3, md: 6 }}
-      templateAreas={{ base: `"content" "visual"`, md: desktopAreas }}
-      templateColumns={{ base: "1fr", md: desktopColumns }}
-      {...rest}
-    >
-      <Stack gap={2} gridArea="content">
-        <Text fontWeight="semibold">{title}</Text>
-        {children}
-      </Stack>
-      <Stack gridArea="visual">{visual}</Stack>
-    </Grid>
+    <Stack as="section" gap={3} w="full" {...rest}>
+      <Text fontWeight="semibold">{title}</Text>
+      <Stack gap={2}>{children}</Stack>
+      {visual && <Stack align="center">{visual}</Stack>}
+    </Stack>
   );
 }

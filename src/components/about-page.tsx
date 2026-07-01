@@ -1,20 +1,11 @@
-import {
-  Container,
-  Dialog,
-  Em,
-  Flex,
-  Heading,
-  HStack,
-  Kbd,
-  Portal,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
-import { XIcon } from "lucide-react";
+import { Container, Dialog, Em, HStack, Kbd, Portal, Stack, Text } from "@chakra-ui/react";
+import { ChevronLeftIcon } from "lucide-react";
 
 import DocsImage from "~/components/docs-image";
 import DocsSection from "~/components/docs-section";
-import IconButton from "~/ui/icon-button";
+import Button from "~/ui/button";
+
+import ThemeButton from "../theme/theme-button";
 
 //------------------------------------------------------------------------------
 // About Page
@@ -30,22 +21,23 @@ export default function AboutPage({ onClose }: AboutPageProps) {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content bg="bg" color="fg" overflowY="auto">
+          <Dialog.Content aria-label="About SirenSong" bg="bg" color="fg" overflowY="auto">
             <Container maxW="4xl" px={{ base: 4, md: 8 }} py={{ base: 6, md: 10 }}>
-              <Flex align="center" gap={4} justify="space-between" mb={4}>
-                <Dialog.Title asChild>
-                  <Heading as="h1" size="2xl">
-                    About SirenSong
-                  </Heading>
-                </Dialog.Title>
-                <Dialog.CloseTrigger asChild>
-                  <IconButton Icon={XIcon} aria-label="Close about page" variant="ghost" />
-                </Dialog.CloseTrigger>
-              </Flex>
+              <HStack justify="space-between" mb={6}>
+                <Button aria-label="Back to mixer" onClick={onClose} size="sm" variant="outline">
+                  <ChevronLeftIcon />
+                  Back
+                </Button>
+
+                <ThemeButton />
+              </HStack>
+
+              <Text fontFamily="Nautilus" fontSize={{ base: "3xl", md: "4xl" }} mb={4}>
+                SirenSong
+              </Text>
 
               <Stack gap={6}>
                 <Stack gap={1}>
-                  {/* <Text>Made by zuccha, © 2026</Text> */}
                   <Text>
                     <Em>SirenSong</Em> is a local sound mixer for tabletop sessions. It lets you
                     prepare playlists, play ambience or music, layer environmental sounds, and
@@ -58,24 +50,72 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                 </Stack>
 
                 <DocsSection
-                  title="Playlists"
+                  title="How the app is organized"
                   visual={
                     <DocsImage
                       alt="Playlist chips"
-                      caption="Playlist chips let you switch between prepared sound sets"
+                      caption="Playlists hold the sound setup for a place, encounter, or session beat"
                       maxW="20em"
                       src="/images/docs/playlist-chips.png"
                     />
                   }
                 >
                   <Text>
-                    A playlist is a prepared set of tracks for a place, mood, encounter, or
-                    situation. Use playlists to switch between locations, scenes, or session beats.
+                    Playlists are the top-level structure. Each playlist contains ambience tracks
+                    and environment tracks, with volume settings saved per playlist.
+                  </Text>
+                  <Text>
+                    Tracks are reusable audio files saved in this browser. The same track can appear
+                    in multiple playlists, while its volume can be tuned differently in each one.
                   </Text>
                 </DocsSection>
 
                 <DocsSection
-                  title="Tracks"
+                  title="Build a playlist"
+                  visual={
+                    <DocsImage
+                      alt="Add track panel"
+                      caption="Add tracks from audio files or reuse tracks already saved in the library"
+                      maxW="30em"
+                      src="/images/docs/add-track.png"
+                    />
+                  }
+                >
+                  <Text>
+                    Add sounds directly from audio files or reuse tracks that are already in the
+                    library. Ambience is for music or mood beds, and environment is for layered
+                    sounds such as rain, wind, crowds, or fire.
+                  </Text>
+                  <Text>
+                    Only one ambience track plays at a time. Environment tracks can play together,
+                    which makes them useful for building a location from several sound layers.
+                  </Text>
+                </DocsSection>
+
+                <DocsSection
+                  title="Run a scene"
+                  visual={
+                    <DocsImage
+                      alt="Play Scene button"
+                      caption="Play Scene starts a prepared playlist in one action"
+                      maxW="12em"
+                      src="/images/docs/play-scene-button.png"
+                    />
+                  }
+                >
+                  <Text>
+                    A playlist with only one ambience track can be played as a scene. Use it when a
+                    playlist is meant to start as a complete sound setup rather than something you
+                    mix track by track.
+                  </Text>
+                  <Text>
+                    Starting a scene plays its environment tracks together and includes the ambience
+                    track when there is exactly one.
+                  </Text>
+                </DocsSection>
+
+                <DocsSection
+                  title="Mix during the session"
                   visual={
                     <DocsImage
                       alt="Track controls"
@@ -84,85 +124,47 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                       src="/images/docs/track-controls.png"
                     />
                   }
-                  visualPosition="left"
                 >
                   <Text>
-                    Tracks are audio files saved in this browser. They can be reused across
-                    playlists, renamed, given icons, and assigned to ambience or environment.
+                    Each track has play, mute, and volume controls for live adjustments. Starting
+                    another ambience track fades the current one out while the new one fades in.
                   </Text>
-                </DocsSection>
-
-                <Stack gap={1}>
-                  <Text fontWeight="semibold">Ambience & Environment</Text>
                   <Text>
-                    Ambience is for music or mood beds. Only one ambience track plays at a time, and
-                    starting a new one fades out the previous one. Environment tracks are layered
-                    sounds such as rain, wind, crowds, or fire, so multiple environment tracks can
-                    play together.
-                  </Text>
-                </Stack>
-
-                <DocsSection
-                  title="Scenes"
-                  visual={
-                    <DocsImage
-                      alt="Play Scene button"
-                      caption="The scene control starts all tracks in the scene"
-                      maxW="10em"
-                      src="/images/docs/play-scene-button.png"
-                    />
-                  }
-                >
-                  <Text>
-                    A playlist with only one ambience track is considered a scene. Scenes are not
-                    meant for mixing sounds on the fly, rather all their tracks can be played at the
-                    same time.
-                  </Text>
-                </DocsSection>
-
-                <Stack gap={1}>
-                  <Text fontWeight="semibold">Playback and Master Volume</Text>
-                  <Text>
-                    Individual tracks have their own play button, mute button, and volume. The
-                    floating master control adjusts the whole mix and can pause or resume everything
+                    The master control adjusts the whole mix and can pause or resume everything
                     currently playing.
                   </Text>
-                </Stack>
+                </DocsSection>
 
                 <DocsSection
-                  title="Editing"
+                  title="Edit playlists and tracks"
                   visual={
                     <DocsImage
                       alt="Edit and Done buttons"
-                      caption="Edit opens playlist and track editing controls, Done hides them"
+                      caption="Edit opens playlist and track editing controls, Done returns to playback"
                       maxW="16em"
                       src="/images/docs/edit-button.png"
                     />
                   }
-                  visualPosition="left"
                 >
                   <Text>
-                    Use Edit to change playlists and track lists, then Done to return to playback.
+                    Edit mode is where you rename playlists, reorder tracks, remove tracks from a
+                    playlist, and change track details.
+                  </Text>
+                  <Text>
                     Track name, icon, audio file, and track type belong to the track itself. Volume
-                    is playlist-specific, so the same track can be quieter in one playlist and
-                    louder in another.
+                    belongs to the playlist, so the same sound can be balanced differently depending
+                    on where it is used.
                   </Text>
                 </DocsSection>
 
-                <DocsSection
-                  title="Deleting Tracks"
-                  visual={
-                    <DocsImage
-                      alt="Tracks button"
-                      caption="The Tracks button opens the library drawer"
-                      maxW="10em"
-                      src="/images/docs/tracks-button.png"
-                    />
-                  }
-                >
+                <DocsSection title="Manage the track library">
                   <Text>
-                    Open Tracks from the top bar to manage the track library. From there, tracks can
-                    be searched, edited, or deleted from the device.
+                    Open Tracks from the top bar to manage every saved track. The library can be
+                    searched, filtered by ambience or environment, edited, and used to delete tracks
+                    from the device.
+                  </Text>
+                  <Text>
+                    If a track is deleted from the library, it is removed from playlists as well.
                   </Text>
                 </DocsSection>
 
