@@ -1,15 +1,4 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Drawer,
-  Flex,
-  HStack,
-  Input,
-  Portal,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Button, Drawer, Flex, HStack, Input, Portal, Stack, Text } from "@chakra-ui/react";
 import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
@@ -40,14 +29,15 @@ export default function TrackLibraryDrawer({
   onEditTrack,
 }: TrackLibraryDrawerProps) {
   const [query, setQuery] = useState("");
-  const [newTrackKind, setNewTrackKind] = useState<TrackKind>("ambience");
+  const [selectedKind, setSelectedKind] = useState<TrackKind>("ambience");
   const [trackToEdit, setTrackToEdit] = useState<Track>();
   const [trackToDelete, setTrackToDelete] = useState<Track>();
   const normalizedQuery = query.trim().toLowerCase();
+  const kindTracks = tracks.filter((track) => track.kind === selectedKind);
   const filteredTracks = (
     normalizedQuery
-      ? tracks.filter((track) => track.name.toLowerCase().includes(normalizedQuery))
-      : tracks
+      ? kindTracks.filter((track) => track.name.toLowerCase().includes(normalizedQuery))
+      : kindTracks
   ).toSorted((firstTrack, secondTrack) =>
     firstTrack.name.localeCompare(secondTrack.name, undefined, { sensitivity: "base" }),
   );
@@ -68,7 +58,7 @@ export default function TrackLibraryDrawer({
   //------------------------------------------------------------------------------
 
   const selectNewTrackKind = (kind: TrackKind) => {
-    setNewTrackKind(kind);
+    setSelectedKind(kind);
   };
 
   return (
@@ -94,7 +84,7 @@ export default function TrackLibraryDrawer({
                       flex={1}
                       onClick={() => selectNewTrackKind("ambience")}
                       size="xs"
-                      variant={newTrackKind === "ambience" ? "solid" : "outline"}
+                      variant={selectedKind === "ambience" ? "solid" : "outline"}
                     >
                       Ambience
                     </Button>
@@ -102,16 +92,16 @@ export default function TrackLibraryDrawer({
                       flex={1}
                       onClick={() => selectNewTrackKind("environment")}
                       size="xs"
-                      variant={newTrackKind === "environment" ? "solid" : "outline"}
+                      variant={selectedKind === "environment" ? "solid" : "outline"}
                     >
                       Environment
                     </Button>
                   </HStack>
 
                   <TrackUpload
-                    key={newTrackKind}
-                    defaultIcon={getDefaultTrackIcon(newTrackKind)}
-                    kind={newTrackKind}
+                    key={selectedKind}
+                    defaultIcon={getDefaultTrackIcon(selectedKind)}
+                    kind={selectedKind}
                     onUpload={onAddTrack}
                   />
 
@@ -145,7 +135,13 @@ export default function TrackLibraryDrawer({
                       </Text>
                     )}
 
-                    {tracks.length > 0 && filteredTracks.length === 0 && (
+                    {tracks.length > 0 && kindTracks.length === 0 && (
+                      <Text color="fg.muted" fontSize="sm">
+                        No {getTrackKindLabel(selectedKind).toLowerCase()} tracks in your library.
+                      </Text>
+                    )}
+
+                    {kindTracks.length > 0 && filteredTracks.length === 0 && (
                       <Text color="fg.muted" fontSize="sm">
                         No tracks match.
                       </Text>
@@ -171,14 +167,9 @@ export default function TrackLibraryDrawer({
                             </Flex>
                             <Box flex={1} minW={0}>
                               <Stack gap={0.5} minW={0}>
-                                <HStack gap={2} minW={0}>
-                                  <Text fontSize="sm" fontWeight="medium" truncate>
-                                    {track.name}
-                                  </Text>
-                                  <Badge flexShrink={0} size="sm" variant="subtle">
-                                    {track.kind}
-                                  </Badge>
-                                </HStack>
+                                <Text fontSize="sm" fontWeight="medium" truncate>
+                                  {track.name}
+                                </Text>
                                 <Text color="fg.muted" fontSize="xs" truncate>
                                   {track.fileName}
                                 </Text>
@@ -233,4 +224,12 @@ export default function TrackLibraryDrawer({
 
 function getDefaultTrackIcon(kind: TrackKind) {
   return kind === "ambience" ? "music" : "wind";
+}
+
+//------------------------------------------------------------------------------
+// Get Track Kind Label
+//------------------------------------------------------------------------------
+
+function getTrackKindLabel(kind: TrackKind) {
+  return kind === "ambience" ? "Ambience" : "Environment";
 }
