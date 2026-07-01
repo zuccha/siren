@@ -1,6 +1,6 @@
 import { Button, Dialog, Portal, Text } from "@chakra-ui/react";
-import { XIcon } from "lucide-react";
-import { useState, type MouseEvent } from "react";
+import { Trash2Icon } from "lucide-react";
+import { useState } from "react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
 import IconButton from "~/ui/icon-button";
@@ -10,26 +10,28 @@ import IconButton from "~/ui/icon-button";
 //------------------------------------------------------------------------------
 
 type DeletePlaylistButtonProps = {
-  playlist: TrackPlaylist;
+  playlist: TrackPlaylist | undefined;
   disabled: boolean;
-  isSelected: boolean;
   onRemovePlaylist: (playlistId: string) => void;
 };
 
 export default function DeletePlaylistButton({
   playlist,
   disabled,
-  isSelected,
   onRemovePlaylist,
 }: DeletePlaylistButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const hasTracks = playlist.ambienceTrackIds.length > 0 || playlist.environmentTrackIds.length > 0;
+  const hasTracks = playlist
+    ? playlist.ambienceTrackIds.length > 0 || playlist.environmentTrackIds.length > 0
+    : false;
 
   //------------------------------------------------------------------------------
   // Remove Playlist
   //------------------------------------------------------------------------------
 
   const removePlaylist = () => {
+    if (!playlist) return;
+
     onRemovePlaylist(playlist.id);
     setIsOpen(false);
   };
@@ -39,6 +41,8 @@ export default function DeletePlaylistButton({
   //------------------------------------------------------------------------------
 
   const requestRemovePlaylist = () => {
+    if (!playlist) return;
+
     if (hasTracks) {
       setIsOpen(true);
       return;
@@ -47,31 +51,15 @@ export default function DeletePlaylistButton({
     removePlaylist();
   };
 
-  //------------------------------------------------------------------------------
-  // Handle Close Trigger Click
-  //------------------------------------------------------------------------------
-
-  const handleCloseTriggerClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    requestRemovePlaylist();
-  };
-
   return (
     <>
       <IconButton
-        Icon={XIcon}
-        aria-label={`Delete ${playlist.name}`}
-        color={isSelected ? "bg" : "fg.muted"}
+        Icon={Trash2Icon}
+        aria-label={playlist ? `Delete ${playlist.name}` : "Delete selected playlist"}
         disabled={disabled}
-        h={5}
-        minW={5}
-        mr={1}
-        onClick={handleCloseTriggerClick}
-        rounded="full"
-        size="2xs"
-        variant="plain"
-        w={5}
-        zIndex={1}
+        onClick={requestRemovePlaylist}
+        size="xs"
+        variant="outline"
       />
       <Dialog.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
         <Portal>

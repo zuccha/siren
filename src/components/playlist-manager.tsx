@@ -52,55 +52,18 @@ export default function PlaylistManager({
           const isPlaying = playlist.id === playingPlaylistId;
 
           return (
-            <HStack
+            <Button
+              borderRadius="full"
               key={playlist.id}
-              bg={isSelected ? "fg" : "transparent"}
-              borderColor={isSelected ? "fg" : "border"}
-              borderWidth="1px"
-              color={isSelected ? "bg" : "fg"}
-              gap={0}
-              overflow="hidden"
-              position="relative"
-              pr={isEditing ? 1 : 0}
-              rounded="full"
-              flexShrink={0}
-              _before={{
-                bg: isSelected ? "whiteAlpha.300" : "bg.muted",
-                content: '""',
-                inset: 0,
-                opacity: 0,
-                pointerEvents: "none",
-                position: "absolute",
-                rounded: "inherit",
-                transition: "opacity 120ms ease",
-              }}
-              _hover={{ _before: { opacity: 1 } }}
+              onClick={() => onSelectPlaylist(playlist.id)}
+              size="xs"
+              variant={isSelected ? "solid" : "outline"}
+              zIndex={1}
+              _icon={getButtonIconStyles("xs")}
             >
-              <Button
-                borderEndRadius={isEditing ? 0 : "full"}
-                borderStartRadius="full"
-                color="inherit"
-                onClick={() => onSelectPlaylist(playlist.id)}
-                ps={3}
-                pe={isEditing ? 1 : 3}
-                size="xs"
-                variant="plain"
-                zIndex={1}
-                _hover={{ bg: "transparent" }}
-                _icon={getButtonIconStyles("xs")}
-              >
-                {isPlaying && <Volume2Icon />}
-                {playlist.name}
-              </Button>
-              {isEditing && (
-                <DeletePlaylistButton
-                  disabled={false}
-                  isSelected={isSelected}
-                  playlist={playlist}
-                  onRemovePlaylist={onRemovePlaylist}
-                />
-              )}
-            </HStack>
+              {isPlaying && <Volume2Icon />}
+              {playlist.name}
+            </Button>
           );
         })}
       </HStack>
@@ -117,8 +80,15 @@ export default function PlaylistManager({
           </Icon>
           {isScenePlaying ? "Pause Scene" : "Play Scene"}
         </Button>
-        {isEditing && (
-          <EditPlaylistDialog playlist={selectedPlaylist} onEditPlaylist={onEditPlaylist} />
+        {isEditing && selectedPlaylist && (
+          <>
+            <EditPlaylistDialog playlist={selectedPlaylist} onEditPlaylist={onEditPlaylist} />
+            <DeletePlaylistButton
+              disabled={false}
+              playlist={selectedPlaylist}
+              onRemovePlaylist={onRemovePlaylist}
+            />
+          </>
         )}
       </HStack>
     </HStack>
