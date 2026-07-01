@@ -116,6 +116,7 @@ function App() {
                 )}
                 tracks={mixer.trackLibrary.environmentTracks}
                 isEditing={isEditing}
+                isPlayingAll={mixer.isEnvironmentPlaying}
                 mutedTrackIds={mixer.mutedTrackIds}
                 playingIds={mixer.playingIds}
                 volumes={mixer.volumes}
@@ -125,6 +126,7 @@ function App() {
                 onRemove={mixer.removeTrackFromPlaylist}
                 onReorder={mixer.reorderTracks}
                 onToggle={mixer.toggleTrack}
+                onToggleAll={mixer.toggleEnvironmentTracks}
                 onUpload={mixer.addLocalTrack}
                 onVolumeChange={mixer.setTrackVolume}
               />

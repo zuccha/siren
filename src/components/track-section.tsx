@@ -1,5 +1,5 @@
-import { Box, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
-import { CircleOffIcon } from "lucide-react";
+import { Box, Button, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
+import { CircleOffIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { Fragment, useState, type DragEvent } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -32,6 +32,7 @@ type TrackSectionProps = {
   availableTracks: Track[];
   tracks: Track[];
   isEditing: boolean;
+  isPlayingAll?: boolean;
   mutedTrackIds: Set<string>;
   playingIds: Set<string>;
   volumes: Record<string, number>;
@@ -46,6 +47,7 @@ type TrackSectionProps = {
     position: TrackDropPosition,
   ) => void;
   onToggle: (track: Track) => void;
+  onToggleAll?: () => void;
   onUpload: (input: LocalTrackInput) => Promise<void>;
   onVolumeChange: (trackId: string, volume: number) => void;
 };
@@ -57,6 +59,7 @@ export default function TrackSection({
   availableTracks,
   tracks,
   isEditing,
+  isPlayingAll = false,
   mutedTrackIds,
   playingIds,
   volumes,
@@ -66,11 +69,13 @@ export default function TrackSection({
   onRemove,
   onReorder,
   onToggle,
+  onToggleAll,
   onUpload,
   onVolumeChange,
 }: TrackSectionProps) {
   const [draggedTrackId, setDraggedTrackId] = useState<string>();
   const [dropTarget, setDropTarget] = useState<TrackDropTarget>();
+  const PlayAllIcon = isPlayingAll ? PauseIcon : PlayIcon;
 
   //------------------------------------------------------------------------------
   // Start Track Drag
@@ -167,9 +172,24 @@ export default function TrackSection({
 
   return (
     <Box as="section">
-      <Heading as="h2" size="md" mb={3}>
-        {title}
-      </Heading>
+      <HStack justify="space-between" mb={3} minH={8}>
+        <Heading as="h2" size="md">
+          {title}
+        </Heading>
+        {onToggleAll && (
+          <Button
+            disabled={tracks.every((track) => track.hasMissingAudio)}
+            onClick={onToggleAll}
+            size="xs"
+            variant="outline"
+          >
+            <Icon size="xs">
+              <PlayAllIcon />
+            </Icon>
+            {isPlayingAll ? "Pause All" : "Play All"}
+          </Button>
+        )}
+      </HStack>
       <Stack gap={0}>
         {tracks.length === 0 && (
           <Box

@@ -215,6 +215,14 @@ export default function useTrackMixer() {
   }, [selectedPlaylist, trackById]);
   const volumes = useMemo(() => getPlaylistVolumes(selectedPlaylist), [selectedPlaylist]);
   const sceneTracks = useMemo(() => getSceneTracks(trackLibrary), [trackLibrary]);
+  const playableEnvironmentTracks = useMemo(
+    () => trackLibrary.environmentTracks.filter((track) => !track.hasMissingAudio),
+    [trackLibrary.environmentTracks],
+  );
+  const areEnvironmentTracksPlaying =
+    playableEnvironmentTracks.length > 0 &&
+    activePlaylistId.current === selectedPlaylist?.id &&
+    playableEnvironmentTracks.every((track) => playingIds.has(track.id));
   const isScenePlaying =
     sceneTracks.length > 0 &&
     activePlaylistId.current === selectedPlaylist?.id &&
@@ -616,6 +624,71 @@ export default function useTrackMixer() {
   }, [isScenePlaying, startScene, stopScene]);
 
   //------------------------------------------------------------------------------
+  // Start Environment Tracks
+  //------------------------------------------------------------------------------
+
+  const startEnvironmentTracks = useCallback(() => {
+    if (!selectedPlaylist || playableEnvironmentTracks.length === 0) return;
+
+    if (isPaused) resumeActiveSounds();
+
+    const isSwitchingPlaylist =
+      Boolean(activePlaylistId.current) && activePlaylistId.current !== selectedPlaylist.id;
+
+    if (isSwitchingPlaylist) {
+      fadeOutAllTracks();
+    }
+
+    const nextPlayingIds = isSwitchingPlaylist ? new Set<string>() : new Set(playingIds);
+
+    for (const track of playableEnvironmentTracks) {
+      if (activeSounds.current.has(track.id)) continue;
+
+      const sound = createSound(track, getTrackVolume(selectedPlaylist, track), {
+        fadeIn: true,
+        isMasterMuted,
+        isMuted: mutedTrackIds.has(track.id),
+        masterVolume,
+      });
+
+      activeSounds.current.set(track.id, sound);
+      nextPlayingIds.add(track.id);
+    }
+
+    activePlaylistId.current = selectedPlaylist.id;
+    setPlayingIds(nextPlayingIds);
+  }, [
+    fadeOutAllTracks,
+    isMasterMuted,
+    isPaused,
+    masterVolume,
+    mutedTrackIds,
+    playableEnvironmentTracks,
+    playingIds,
+    resumeActiveSounds,
+    selectedPlaylist,
+  ]);
+
+  //------------------------------------------------------------------------------
+  // Stop Environment Tracks
+  //------------------------------------------------------------------------------
+
+  const stopEnvironmentTracks = useCallback(() => {
+    for (const track of playableEnvironmentTracks) {
+      stopTrack(track.id);
+    }
+  }, [playableEnvironmentTracks, stopTrack]);
+
+  //------------------------------------------------------------------------------
+  // Toggle Environment Tracks
+  //------------------------------------------------------------------------------
+
+  const toggleEnvironmentTracks = useCallback(() => {
+    if (areEnvironmentTracksPlaying) stopEnvironmentTracks();
+    else startEnvironmentTracks();
+  }, [areEnvironmentTracksPlaying, startEnvironmentTracks, stopEnvironmentTracks]);
+
+  //------------------------------------------------------------------------------
   // Set Track Volume
   //------------------------------------------------------------------------------
 
@@ -829,6 +902,7 @@ export default function useTrackMixer() {
     isLoaded: library !== undefined,
     isMasterMuted,
     isPaused,
+    isEnvironmentPlaying: areEnvironmentTracksPlaying,
     isScenePlaying,
     masterVolume,
     mutedTrackIds,
@@ -846,6 +920,7 @@ export default function useTrackMixer() {
     sceneTrackCount: sceneTracks.length,
     toggleMasterMute,
     togglePauseAll,
+    toggleEnvironmentTracks,
     toggleScene,
     toggleTrack,
     toggleTrackMute,
