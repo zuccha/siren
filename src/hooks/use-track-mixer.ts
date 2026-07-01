@@ -160,6 +160,7 @@ export default function useTrackMixer() {
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
 
   const activeSounds = useRef(new Map<string, ActiveSound>());
+  const activePlaylistId = useRef<string | undefined>(undefined);
   const loadedLibrary = library ?? emptyMixerLibrary;
   const playlists = useMemo(
     () => sortPlaylists(loadedLibrary.playlists),
@@ -180,6 +181,10 @@ export default function useTrackMixer() {
     return createTrackLibrary(ambienceTracks, environmentTracks);
   }, [selectedPlaylist, trackById]);
   const volumes = useMemo(() => getPlaylistVolumes(selectedPlaylist), [selectedPlaylist]);
+  const selectedPlaylistPlayingIds = useMemo(() => {
+    if (activePlaylistId.current !== selectedPlaylist?.id) return new Set<string>();
+    return playingIds;
+  }, [playingIds, selectedPlaylist?.id]);
 
   useEffect(() => {
     void loadLocalTrackLibrary().then((localLibrary) => {
@@ -196,6 +201,42 @@ export default function useTrackMixer() {
 
   const updateLibrary = useCallback((updater: (previous: MixerLibrary) => MixerLibrary) => {
     setLibrary((previous) => updater(previous ?? emptyMixerLibrary));
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Stop All Tracks
+  //------------------------------------------------------------------------------
+
+  const stopAllTracks = useCallback(() => {
+    for (const sound of activeSounds.current.values()) {
+      stopSound(sound);
+    }
+
+    activeSounds.current.clear();
+    activePlaylistId.current = undefined;
+    setPlayingIds(new Set());
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Fade Out All Tracks
+  //------------------------------------------------------------------------------
+
+  const fadeOutAllTracks = useCallback(() => {
+    for (const sound of activeSounds.current.values()) {
+      fadeOutAndStop(sound);
+    }
+
+    activeSounds.current.clear();
+    activePlaylistId.current = undefined;
+    setPlayingIds(new Set());
+  }, []);
+
+  //------------------------------------------------------------------------------
+  // Select Playlist
+  //------------------------------------------------------------------------------
+
+  const selectPlaylist = useCallback((playlistId: string | undefined) => {
+    setSelectedPlaylistId(playlistId);
   }, []);
 
   //------------------------------------------------------------------------------
@@ -242,12 +283,17 @@ export default function useTrackMixer() {
       deleteLocalPlaylist(playlistId);
       updateLibrary((previous) => {
         const playlists = previous.playlists.filter((playlist) => playlist.id !== playlistId);
-        setSelectedPlaylistId((current) => (current === playlistId ? playlists[0]?.id : current));
+        setSelectedPlaylistId((current) => {
+          if (current !== playlistId) return current;
+
+          if (activePlaylistId.current === playlistId) stopAllTracks();
+          return playlists[0]?.id;
+        });
 
         return { ...previous, playlists };
       });
     },
-    [updateLibrary],
+    [stopAllTracks, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
@@ -354,6 +400,7 @@ export default function useTrackMixer() {
       else stopSound(sound);
 
       activeSounds.current.delete(trackId);
+      if (activeSounds.current.size === 0) activePlaylistId.current = undefined;
       setPlayingIds((previous) => {
         const next = new Set(previous);
         next.delete(trackId);
@@ -369,6 +416,12 @@ export default function useTrackMixer() {
 
   const startTrack = useCallback(
     (track: Track) => {
+      if (!selectedPlaylist) return;
+
+      if (activePlaylistId.current && activePlaylistId.current !== selectedPlaylist.id) {
+        fadeOutAllTracks();
+      }
+
       if (track.kind === "ambience") {
         for (const activeId of activeSounds.current.keys()) {
           const activeTrack = trackById.get(activeId);
@@ -385,9 +438,19 @@ export default function useTrackMixer() {
       if (isPaused) pauseSound(sound);
 
       activeSounds.current.set(track.id, sound);
+      activePlaylistId.current = selectedPlaylist.id;
       setPlayingIds((previous) => new Set(previous).add(track.id));
     },
-    [isMasterMuted, isPaused, masterVolume, mutedTrackIds, selectedPlaylist, stopTrack, trackById],
+    [
+      isMasterMuted,
+      isPaused,
+      masterVolume,
+      mutedTrackIds,
+      selectedPlaylist,
+      fadeOutAllTracks,
+      stopTrack,
+      trackById,
+    ],
   );
 
   //------------------------------------------------------------------------------
@@ -396,10 +459,13 @@ export default function useTrackMixer() {
 
   const toggleTrack = useCallback(
     (track: Track) => {
-      if (activeSounds.current.has(track.id)) stopTrack(track.id);
+      const isPlayingInSelectedPlaylist =
+        activePlaylistId.current === selectedPlaylist?.id && activeSounds.current.has(track.id);
+
+      if (isPlayingInSelectedPlaylist) stopTrack(track.id);
       else startTrack(track);
     },
-    [startTrack, stopTrack],
+    [selectedPlaylist, startTrack, stopTrack],
   );
 
   //------------------------------------------------------------------------------
@@ -426,7 +492,10 @@ export default function useTrackMixer() {
         ),
       }));
 
-      const sound = activeSounds.current.get(trackId);
+      const sound =
+        activePlaylistId.current === selectedPlaylist.id
+          ? activeSounds.current.get(trackId)
+          : undefined;
       if (sound) fadeSoundTo(sound, volume, 0.12);
     },
     [selectedPlaylist, updateLibrary],
@@ -615,14 +684,14 @@ export default function useTrackMixer() {
     masterVolume,
     mutedTrackIds,
     playlists,
-    playingIds,
+    playingIds: selectedPlaylistPlayingIds,
     removePlaylist,
     removeTrackFromPlaylist,
     reorderTracks,
     selectedPlaylist,
     selectedPlaylistId,
     setMasterVolume,
-    setSelectedPlaylistId,
+    setSelectedPlaylistId: selectPlaylist,
     setTrackVolume,
     toggleMasterMute,
     togglePauseAll,
