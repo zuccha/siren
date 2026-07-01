@@ -1,7 +1,8 @@
-import { Button, HStack } from "@chakra-ui/react";
+import { Button, HStack, Icon } from "@chakra-ui/react";
 import { PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
+import { getButtonIconStyles } from "~/ui/button-icon-styles";
 
 import AddPlaylistDialog from "./add-playlist-dialog";
 import DeletePlaylistButton from "./delete-playlist-button";
@@ -64,7 +65,7 @@ export default function PlaylistManager({
               rounded="full"
               flexShrink={0}
               _before={{
-                bg: isSelected ? "whiteAlpha.300" : "bg.emphasized",
+                bg: isSelected ? "whiteAlpha.300" : "bg.muted",
                 content: '""',
                 inset: 0,
                 opacity: 0,
@@ -86,8 +87,9 @@ export default function PlaylistManager({
                 variant="plain"
                 zIndex={1}
                 _hover={{ bg: "transparent" }}
+                _icon={getButtonIconStyles("xs")}
               >
-                {isPlaying && <Volume2Icon size={13} />}
+                {isPlaying && <Volume2Icon />}
                 {playlist.name}
               </Button>
               {isEditing && (
@@ -106,10 +108,13 @@ export default function PlaylistManager({
         <Button
           disabled={sceneTrackCount === 0}
           onClick={onToggleScene}
-          size="sm"
+          size="xs"
           variant="outline"
+          _icon={getButtonIconStyles("xs")}
         >
-          <SceneIcon size={16} />
+          <Icon size="xs">
+            <SceneIcon />
+          </Icon>
           {isScenePlaying ? "Pause Scene" : "Play Scene"}
         </Button>
         {isEditing && (

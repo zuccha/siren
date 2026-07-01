@@ -1,9 +1,10 @@
-import { Box, Button, Flex, Grid, Heading, Input } from "@chakra-ui/react";
+import { Box, Button, Flex, Grid, Heading, Icon, Input } from "@chakra-ui/react";
 import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { useEffect, useState, type DragEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
+import { getButtonIconStyles } from "~/ui/button-icon-styles";
 import IconButton from "~/ui/icon-button";
 
 import TrackIconPicker from "./track-icon-picker";
@@ -142,8 +143,9 @@ export default function TrackControl({
             size="xs"
             variant="plain"
             _active={{ cursor: "grabbing" }}
+            _icon={getButtonIconStyles("xs")}
           >
-            <GripVerticalIcon size={18} />
+            <GripVerticalIcon />
           </Button>
         ) : (
           <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
@@ -185,14 +187,15 @@ export default function TrackControl({
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
           disabled={track.hasMissingAudio}
-          gridColumn={{ base: 3, sm: "auto" }}
-          gridRow={{ base: 1, sm: "auto" }}
-          minW="4.5rem"
+          w="4rem"
           onClick={() => onToggle(track)}
           size="xs"
           variant={isPlaying ? "solid" : "outline"}
+          _icon={getButtonIconStyles("xs")}
         >
-          <PlayStateIcon size={14} />
+          <Icon size="xs">
+            <PlayStateIcon />
+          </Icon>
           {isPlaying ? "Stop" : "Play"}
         </Button>
       </Grid>

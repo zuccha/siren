@@ -4,23 +4,20 @@ import {
 } from "@chakra-ui/react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
+import { getButtonIconStyles } from "./button-icon-styles";
+
 //------------------------------------------------------------------------------
 // Dynamic Icon Button
 //------------------------------------------------------------------------------
 
-type DynamicIconButtonProps = Omit<ChakraIconButtonProps, "children"> & {
+type DynamicIconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> & {
   icon: IconName;
-  iconSize?: number;
 };
 
-export default function DynamicIconButton({
-  icon,
-  iconSize = 18,
-  ...rest
-}: DynamicIconButtonProps) {
+export default function DynamicIconButton({ icon, size, ...rest }: DynamicIconButtonProps) {
   return (
-    <ChakraIconButton rounded="full" {...rest}>
-      <DynamicIcon name={icon} size={iconSize} />
+    <ChakraIconButton rounded="full" {...rest} size={size} _icon={getButtonIconStyles(size)}>
+      <DynamicIcon name={icon} />
     </ChakraIconButton>
   );
 }

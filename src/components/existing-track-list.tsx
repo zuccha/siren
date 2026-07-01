@@ -4,6 +4,7 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
 import type { Track } from "~/sound/tracks";
+import { getButtonIconStyles } from "~/ui/button-icon-styles";
 
 //------------------------------------------------------------------------------
 // Existing Track List
@@ -71,9 +72,10 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
                 onClick={() => onAddTrack(track)}
                 size="xs"
                 variant="outline"
+                _icon={getButtonIconStyles("xs")}
               >
-                <PlusIcon size={14} />
-                <DynamicIcon name={track.icon} size={14} />
+                <PlusIcon />
+                <DynamicIcon name={track.icon} />
                 <Text
                   as="span"
                   maxW="10rem"

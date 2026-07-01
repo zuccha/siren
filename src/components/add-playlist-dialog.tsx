@@ -45,11 +45,9 @@ export default function AddPlaylistDialog({ children, onAddPlaylist }: AddPlayli
           <IconButton
             Icon={PlusIcon}
             aria-label="Add playlist"
-            borderColor="border"
-            borderWidth={1}
             mr={2}
             size="xs"
-            variant="subtle"
+            variant="outline"
           />
         )}
       </Dialog.Trigger>

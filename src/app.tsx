@@ -37,7 +37,7 @@ function App() {
   });
 
   return (
-    <Box minH="100vh" bg="bg.muted" color="fg">
+    <Box minH="100vh" bg="bg.subtle" color="fg">
       <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Heading
