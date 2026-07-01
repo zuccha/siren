@@ -1,4 +1,5 @@
 import { Button, HStack } from "@chakra-ui/react";
+import { Volume2Icon } from "lucide-react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
 
@@ -12,6 +13,7 @@ import EditPlaylistDialog from "./edit-playlist-dialog";
 
 type PlaylistManagerProps = {
   isEditing: boolean;
+  playingPlaylistId: string | undefined;
   playlists: TrackPlaylist[];
   selectedPlaylistId: string | undefined;
   onAddPlaylist: (name: string) => void;
@@ -22,6 +24,7 @@ type PlaylistManagerProps = {
 
 export default function PlaylistManager({
   isEditing,
+  playingPlaylistId,
   playlists,
   selectedPlaylistId,
   onAddPlaylist,
@@ -36,6 +39,7 @@ export default function PlaylistManager({
       <HStack flex={1} gap={2} minW={0} overflowX="auto">
         {playlists.map((playlist) => {
           const isSelected = playlist.id === selectedPlaylistId;
+          const isPlaying = playlist.id === playingPlaylistId;
 
           return (
             <HStack
@@ -74,6 +78,7 @@ export default function PlaylistManager({
                 zIndex={1}
                 _hover={{ bg: "transparent" }}
               >
+                {isPlaying && <Volume2Icon size={13} />}
                 {playlist.name}
               </Button>
               {isEditing && (

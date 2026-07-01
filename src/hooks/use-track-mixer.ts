@@ -739,6 +739,7 @@ export default function useTrackMixer() {
     masterVolume,
     mutedTrackIds,
     playlists,
+    playingPlaylistId: activePlaylistId.current,
     playingIds: selectedPlaylistPlayingIds,
     removePlaylist,
     removeTrackFromPlaylist,

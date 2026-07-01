@@ -70,6 +70,7 @@ function App() {
           <Grid gap={{ base: 5, md: 6 }}>
             <PlaylistManager
               isEditing={isEditing}
+              playingPlaylistId={mixer.playingPlaylistId}
               playlists={mixer.playlists}
               selectedPlaylistId={mixer.selectedPlaylistId}
               onAddPlaylist={mixer.addPlaylist}
