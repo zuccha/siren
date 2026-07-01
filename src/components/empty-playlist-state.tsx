@@ -1,7 +1,7 @@
-import { Button, Center } from "@chakra-ui/react";
+import { Center } from "@chakra-ui/react";
 import { PlusIcon } from "lucide-react";
 
-import { getButtonIconStyles } from "~/ui/button-icon-styles";
+import Button from "~/ui/button";
 
 import AddPlaylistDialog from "./add-playlist-dialog";
 
@@ -29,7 +29,6 @@ export default function EmptyPlaylistState({ onAddPlaylist }: EmptyPlaylistState
           variant="ghost"
           w="full"
           _hover={{ bg: "bg.emphasized", borderColor: "fg", color: "fg" }}
-          _icon={getButtonIconStyles("md")}
         >
           <PlusIcon />
           Create a playlist

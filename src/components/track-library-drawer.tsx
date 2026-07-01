@@ -1,21 +1,10 @@
-import {
-  Box,
-  Button,
-  Drawer,
-  Flex,
-  HStack,
-  Icon,
-  Input,
-  Portal,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Drawer, Flex, HStack, Input, Portal, Stack, Text } from "@chakra-ui/react";
 import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track, TrackKind } from "~/sound/tracks";
-import { getButtonIconStyles } from "~/ui/button-icon-styles";
+import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
 
 import DeleteTrackDialog from "./delete-track-dialog";
@@ -77,10 +66,8 @@ export default function TrackLibraryDrawer({
     <>
       <Drawer.Root size="sm">
         <Drawer.Trigger asChild>
-          <Button size="sm" variant="outline" _icon={getButtonIconStyles("sm")}>
-            <Icon size="sm">
-              <LibraryIcon />
-            </Icon>
+          <Button size="sm" variant="outline">
+            <LibraryIcon />
             Tracks
           </Button>
         </Drawer.Trigger>

@@ -1,4 +1,18 @@
-import type { IconButtonProps } from "@chakra-ui/react";
+import { Button as ChakraButton, type ButtonProps as ChakraButtonProps } from "@chakra-ui/react";
+
+//------------------------------------------------------------------------------
+// Button
+//------------------------------------------------------------------------------
+
+export type ButtonProps = Omit<ChakraButtonProps, "_icon">;
+
+export default function Button({ size, ...rest }: ButtonProps) {
+  return <ChakraButton {...rest} size={size} _icon={getButtonIconStyles(size)} />;
+}
+
+//------------------------------------------------------------------------------
+// Button Icon Size
+//------------------------------------------------------------------------------
 
 type ButtonIconSize = "2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
@@ -16,7 +30,7 @@ const iconBoxSizeByButtonSize: Record<ButtonIconSize, string> = {
 // Get Button Icon Styles
 //------------------------------------------------------------------------------
 
-export function getButtonIconStyles(size: IconButtonProps["size"]) {
+function getButtonIconStyles(size: ButtonProps["size"]) {
   const buttonSize = typeof size === "string" ? size : "md";
   const boxSize = isButtonIconSize(buttonSize) ? iconBoxSizeByButtonSize[buttonSize] : "5";
 

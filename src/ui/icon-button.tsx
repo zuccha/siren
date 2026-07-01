@@ -4,8 +4,6 @@ import {
   createIcon,
 } from "@chakra-ui/react";
 
-import { getButtonIconStyles } from "./button-icon-styles";
-
 import type { LucideIcon } from "lucide-react";
 
 //------------------------------------------------------------------------------
@@ -18,7 +16,7 @@ export type IconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> 
 
 export default function IconButton({ Icon, size, ...rest }: IconButtonProps) {
   return (
-    <ChakraIconButton rounded="full" {...rest} size={size} _icon={getButtonIconStyles(size)}>
+    <ChakraIconButton rounded="full" {...rest} size={size}>
       <Icon />
     </ChakraIconButton>
   );

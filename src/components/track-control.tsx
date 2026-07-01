@@ -1,10 +1,10 @@
-import { Box, Button, Flex, Grid, Heading, Icon, Input } from "@chakra-ui/react";
+import { Box, Flex, Grid, Heading, Input } from "@chakra-ui/react";
 import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { useEffect, useState, type DragEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
-import { getButtonIconStyles } from "~/ui/button-icon-styles";
+import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
 
 import TrackIconPicker from "./track-icon-picker";
@@ -143,7 +143,6 @@ export default function TrackControl({
             size="xs"
             variant="plain"
             _active={{ cursor: "grabbing" }}
-            _icon={getButtonIconStyles("xs")}
           >
             <GripVerticalIcon />
           </Button>
@@ -193,11 +192,8 @@ export default function TrackControl({
           size="xs"
           variant={isPlaying ? "solid" : "outline"}
           w="4rem"
-          _icon={getButtonIconStyles("xs")}
         >
-          <Icon size="xs">
-            <PlayStateIcon />
-          </Icon>
+          <PlayStateIcon />
           {isPlaying ? "Stop" : "Play"}
         </Button>
       </Grid>

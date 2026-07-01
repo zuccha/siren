@@ -1,10 +1,10 @@
-import { Box, Button, Flex, Input, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Input, Stack, Text } from "@chakra-ui/react";
 import { PlusIcon, SearchIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
 import type { Track } from "~/sound/tracks";
-import { getButtonIconStyles } from "~/ui/button-icon-styles";
+import Button from "~/ui/button";
 
 //------------------------------------------------------------------------------
 // Existing Track List
@@ -72,7 +72,6 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
                 onClick={() => onAddTrack(track)}
                 size="xs"
                 variant="outline"
-                _icon={getButtonIconStyles("xs")}
               >
                 <PlusIcon />
                 <DynamicIcon name={track.icon} />

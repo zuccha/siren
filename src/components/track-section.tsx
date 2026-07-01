@@ -1,9 +1,10 @@
-import { Box, Button, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
+import { Box, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
 import { CircleOffIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { Fragment, useState, type DragEvent } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track, TrackDropPosition } from "~/sound/tracks";
+import Button from "~/ui/button";
 
 import ExistingTrackList from "./existing-track-list";
 import TrackControl from "./track-control";
@@ -183,9 +184,7 @@ export default function TrackSection({
             size="xs"
             variant="outline"
           >
-            <Icon size="xs">
-              <PlayAllIcon />
-            </Icon>
+            <PlayAllIcon />
             {isPlayingAll ? "Pause All" : "Play All"}
           </Button>
         )}

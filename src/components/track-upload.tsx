@@ -1,11 +1,11 @@
-import { Box, Button, Grid, HStack, Icon, Input, Text } from "@chakra-ui/react";
+import { Box, Grid, HStack, Input, Text } from "@chakra-ui/react";
 import { UploadIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput } from "~/sound/local-tracks";
 import type { TrackKind } from "~/sound/tracks";
 import AudioFileUpload from "~/ui/audio-file-upload";
-import { getButtonIconStyles } from "~/ui/button-icon-styles";
+import Button from "~/ui/button";
 import VolumeSlider from "~/ui/volume-slider";
 
 import TrackIconPicker from "./track-icon-picker";
@@ -86,11 +86,8 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
           loading={isUploading}
           onClick={uploadTrack}
           size="xs"
-          _icon={getButtonIconStyles("xs")}
         >
-          <Icon size="xs">
-            <UploadIcon />
-          </Icon>
+          <UploadIcon />
           Add
         </Button>
       </Grid>
