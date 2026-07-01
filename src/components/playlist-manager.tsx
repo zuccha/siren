@@ -1,5 +1,5 @@
-import { HStack } from "@chakra-ui/react";
-import { PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
+import { HStack, Icon, Menu, Portal, Span, Text } from "@chakra-ui/react";
+import { CheckIcon, ChevronDownIcon, PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
 import Button from "~/ui/button";
@@ -43,8 +43,65 @@ export default function PlaylistManager({
   const SceneIcon = isScenePlaying ? PauseIcon : PlayIcon;
 
   return (
-    <HStack align="start" gap={3} justify="space-between" minW={0}>
-      <HStack flex={1} gap={2} minW={0} overflowX="auto">
+    <HStack align="start" gap={2} justify="space-between" wrap="wrap">
+      <HStack display={{ base: "flex", md: "none" }} flex={1} gap={2}>
+        <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
+
+        <Menu.Root positioning={{ sameWidth: true }}>
+          <Menu.Trigger asChild>
+            <Button
+              flex={1}
+              justifyContent="space-between"
+              maxW="12rem"
+              minW="6rem"
+              size="xs"
+              variant="outline"
+            >
+              <Span flex={1} textAlign="left" truncate>
+                {selectedPlaylist?.name ?? "Select playlist"}
+              </Span>
+              {selectedPlaylist?.id === playingPlaylistId && <Volume2Icon />}
+              <ChevronDownIcon />
+            </Button>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content>
+                {playlists.map((playlist) => {
+                  const isSelected = playlist.id === selectedPlaylistId;
+                  const isPlaying = playlist.id === playingPlaylistId;
+
+                  return (
+                    <Menu.Item
+                      key={playlist.id}
+                      value={playlist.id}
+                      onClick={() => onSelectPlaylist(playlist.id)}
+                    >
+                      <HStack gap={2} w="full">
+                        <Text as="span" flex={1} truncate>
+                          {playlist.name}
+                        </Text>
+                        {isPlaying && (
+                          <Icon size="xs">
+                            <Volume2Icon />
+                          </Icon>
+                        )}
+                        {isSelected && (
+                          <Icon size="xs">
+                            <CheckIcon />
+                          </Icon>
+                        )}
+                      </HStack>
+                    </Menu.Item>
+                  );
+                })}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
+      </HStack>
+
+      <HStack display={{ base: "none", md: "flex" }} flex={1} gap={2} overflowX="auto">
         <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
 
         {playlists.map((playlist) => {
