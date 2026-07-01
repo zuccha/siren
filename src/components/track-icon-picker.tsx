@@ -12,8 +12,26 @@ import type { IconName } from "lucide-react/dynamic";
 
 type TrackIconPickerProps = {
   label: string;
+  size?: TrackIconPickerSize;
   value: string;
   onIconChange: (icon: string) => void;
+};
+
+type TrackIconPickerSize = "lg" | "md" | "sm" | "xs";
+type TrackIconButtonSize = "lg" | "md" | "sm" | "xs";
+
+const buttonSizeByPickerSize: Record<TrackIconPickerSize, TrackIconButtonSize> = {
+  lg: "lg",
+  md: "md",
+  sm: "sm",
+  xs: "xs",
+};
+
+const iconButtonSizeByPickerSize: Record<TrackIconPickerSize, number> = {
+  lg: 12,
+  md: 10,
+  sm: 8,
+  xs: 8,
 };
 
 const fallbackIcon = "music";
@@ -40,10 +58,17 @@ const presetIcons = [
   "zap",
 ] satisfies IconName[];
 
-export default function TrackIconPicker({ label, value, onIconChange }: TrackIconPickerProps) {
+export default function TrackIconPicker({
+  label,
+  size = "md",
+  value,
+  onIconChange,
+}: TrackIconPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [customIcon, setCustomIcon] = useState(value);
   const selectedIcon = resolveTrackIcon(value) ?? fallbackIcon;
+  const buttonSize = buttonSizeByPickerSize[size];
+  const iconButtonSize = iconButtonSizeByPickerSize[size];
 
   useEffect(() => {
     setCustomIcon(value);
@@ -88,10 +113,10 @@ export default function TrackIconPicker({ label, value, onIconChange }: TrackIco
           aria-label={label}
           borderRadius="sm"
           icon={selectedIcon}
-          minW={8}
-          size="xs"
+          minW={iconButtonSize}
+          size={buttonSize}
           variant="outline"
-          w={8}
+          w={iconButtonSize}
         />
       </Popover.Trigger>
       <Portal>

@@ -161,6 +161,7 @@ export default function TrackControl({
           <Grid gap={2} minW={0} templateColumns="auto minmax(7rem, 1fr)">
             <TrackIconPicker
               label={`${track.name} icon`}
+              size="xs"
               value={draftIcon}
               onIconChange={editTrackIcon}
             />
