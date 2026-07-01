@@ -101,7 +101,7 @@ export default function PlaylistManager({
         </Menu.Root>
       </HStack>
 
-      <HStack display={{ base: "none", md: "flex" }} flex={1} gap={2} overflowX="auto">
+      <HStack display={{ base: "none", md: "flex" }} flex={1} gap={2} m={-1} overflowX="auto" p={1}>
         <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
 
         {playlists.map((playlist) => {

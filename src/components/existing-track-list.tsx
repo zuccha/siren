@@ -56,7 +56,7 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
         </Box>
 
         {filteredTracks.length > 0 ? (
-          <Flex gap={2} maxH="9rem" overflowY="auto" wrap="wrap">
+          <Flex gap={2} wrap="wrap">
             {filteredTracks.map((track) => (
               <Button
                 key={track.id}
