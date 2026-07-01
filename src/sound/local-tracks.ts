@@ -209,6 +209,33 @@ export function removeLocalPlaylistTrack(playlistId: string, trackId: string) {
 }
 
 //------------------------------------------------------------------------------
+// Update Local Playlist Track Volume
+//------------------------------------------------------------------------------
+
+export function updateLocalPlaylistTrackVolume(
+  playlistId: string,
+  trackId: string,
+  volume: number,
+) {
+  const libraryMetadata = loadLocalLibraryMetadata();
+
+  saveLocalLibraryMetadata({
+    ...libraryMetadata,
+    playlists: libraryMetadata.playlists.map((playlist) => {
+      if (playlist.id !== playlistId) return playlist;
+
+      return {
+        ...playlist,
+        volumes: {
+          ...getPlaylistVolumes(playlist),
+          [trackId]: volume,
+        },
+      };
+    }),
+  });
+}
+
+//------------------------------------------------------------------------------
 // Reorder Local Playlist Tracks
 //------------------------------------------------------------------------------
 
@@ -307,6 +334,7 @@ function createPlaylist(name: string): TrackPlaylist {
     name: name.trim() || "Untitled playlist",
     ambienceTrackIds: [],
     environmentTrackIds: [],
+    volumes: {},
   };
 }
 
@@ -332,6 +360,10 @@ function addTrackToPlaylist(playlist: TrackPlaylist, track: Track) {
   return {
     ...playlist,
     [key]: [...playlist[key], track.id],
+    volumes: {
+      ...getPlaylistVolumes(playlist),
+      [track.id]: track.initialVolume,
+    },
   };
 }
 
@@ -340,11 +372,22 @@ function addTrackToPlaylist(playlist: TrackPlaylist, track: Track) {
 //------------------------------------------------------------------------------
 
 function removeTrackFromPlaylist(playlist: TrackPlaylist, trackId: string): TrackPlaylist {
+  const { [trackId]: _removedVolume, ...volumes } = getPlaylistVolumes(playlist);
+
   return {
     ...playlist,
     ambienceTrackIds: playlist.ambienceTrackIds.filter((id) => id !== trackId),
     environmentTrackIds: playlist.environmentTrackIds.filter((id) => id !== trackId),
+    volumes,
   };
+}
+
+//------------------------------------------------------------------------------
+// Get Playlist Volumes
+//------------------------------------------------------------------------------
+
+function getPlaylistVolumes(playlist: TrackPlaylist) {
+  return playlist.volumes ?? {};
 }
 
 //------------------------------------------------------------------------------

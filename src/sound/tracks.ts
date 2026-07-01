@@ -41,6 +41,7 @@ export type TrackPlaylist = {
   name: string;
   ambienceTrackIds: string[];
   environmentTrackIds: string[];
+  volumes: Record<string, number>;
 };
 
 //------------------------------------------------------------------------------

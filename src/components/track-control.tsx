@@ -66,7 +66,7 @@ export default function TrackControl({
     onEdit(track, {
       name: draftName,
       icon: draftIcon,
-      initialVolume: volume,
+      initialVolume: track.initialVolume,
     });
   };
 
@@ -75,16 +75,7 @@ export default function TrackControl({
   //------------------------------------------------------------------------------
 
   const editTrackVolume = (trackId: string, nextVolume: number) => {
-    if (!isEditing) {
-      onVolumeChange(trackId, nextVolume);
-      return;
-    }
-
-    onEdit(track, {
-      name: draftName,
-      icon: draftIcon,
-      initialVolume: nextVolume,
-    });
+    onVolumeChange(trackId, nextVolume);
   };
 
   //------------------------------------------------------------------------------
@@ -96,7 +87,7 @@ export default function TrackControl({
     onEdit(track, {
       name: draftName,
       icon,
-      initialVolume: volume,
+      initialVolume: track.initialVolume,
     });
   };
 

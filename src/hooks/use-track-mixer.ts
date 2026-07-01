@@ -24,6 +24,7 @@ import {
   saveLocalPlaylist,
   saveLocalTrack,
   updateLocalPlaylist,
+  updateLocalPlaylistTrackVolume,
   updateLocalTrack,
 } from "~/sound/local-tracks";
 import {
@@ -111,6 +112,22 @@ function getPlaylistTrackIds(playlist: TrackPlaylist | undefined, kind: TrackKin
 }
 
 //------------------------------------------------------------------------------
+// Get Playlist Volumes
+//------------------------------------------------------------------------------
+
+function getPlaylistVolumes(playlist: TrackPlaylist | undefined) {
+  return playlist?.volumes ?? {};
+}
+
+//------------------------------------------------------------------------------
+// Get Track Volume
+//------------------------------------------------------------------------------
+
+function getTrackVolume(playlist: TrackPlaylist | undefined, track: Track) {
+  return getPlaylistVolumes(playlist)[track.id] ?? track.initialVolume;
+}
+
+//------------------------------------------------------------------------------
 // Set Playlist Track Ids
 //------------------------------------------------------------------------------
 
@@ -141,7 +158,6 @@ export default function useTrackMixer() {
   const [masterVolume, setMasterVolumeState] = useState(100);
   const [mutedTrackIds, setMutedTrackIds] = useState<Set<string>>(() => new Set());
   const [playingIds, setPlayingIds] = useState<Set<string>>(() => new Set());
-  const [volumes, setVolumes] = useState<Record<string, number>>({});
 
   const activeSounds = useRef(new Map<string, ActiveSound>());
   const loadedLibrary = library ?? emptyMixerLibrary;
@@ -163,6 +179,7 @@ export default function useTrackMixer() {
 
     return createTrackLibrary(ambienceTracks, environmentTracks);
   }, [selectedPlaylist, trackById]);
+  const volumes = useMemo(() => getPlaylistVolumes(selectedPlaylist), [selectedPlaylist]);
 
   useEffect(() => {
     void loadLocalTrackLibrary().then((localLibrary) => {
@@ -170,9 +187,6 @@ export default function useTrackMixer() {
 
       setLibrary({ ...localLibrary, playlists: sortedPlaylists });
       setSelectedPlaylistId(sortedPlaylists[0]?.id);
-      setVolumes(
-        Object.fromEntries(localLibrary.tracks.map((track) => [track.id, track.initialVolume])),
-      );
     });
   }, []);
 
@@ -253,7 +267,13 @@ export default function useTrackMixer() {
           const trackIds = getPlaylistTrackIds(playlist, track.kind);
           if (trackIds.includes(track.id)) return playlist;
 
-          return setPlaylistTrackIds(playlist, track.kind, [...trackIds, track.id]);
+          return {
+            ...setPlaylistTrackIds(playlist, track.kind, [...trackIds, track.id]),
+            volumes: {
+              ...getPlaylistVolumes(playlist),
+              [track.id]: track.initialVolume,
+            },
+          };
         }),
       }));
     },
@@ -273,14 +293,19 @@ export default function useTrackMixer() {
         ...previous,
         playlists: previous.playlists.map((playlist) => {
           if (playlist.id !== selectedPlaylist?.id) return playlist;
-          return setPlaylistTrackIds(playlist, track.kind, [
-            ...getPlaylistTrackIds(playlist, track.kind),
-            track.id,
-          ]);
+          return {
+            ...setPlaylistTrackIds(playlist, track.kind, [
+              ...getPlaylistTrackIds(playlist, track.kind),
+              track.id,
+            ]),
+            volumes: {
+              ...getPlaylistVolumes(playlist),
+              [track.id]: track.initialVolume,
+            },
+          };
         }),
         tracks: [...previous.tracks, track],
       }));
-      setVolumes((previous) => ({ ...previous, [track.id]: track.initialVolume }));
     },
     [selectedPlaylist, updateLibrary],
   );
@@ -298,11 +323,16 @@ export default function useTrackMixer() {
         ...previous,
         playlists: previous.playlists.map((playlist) => {
           if (playlist.id !== selectedPlaylist.id) return playlist;
-          return setPlaylistTrackIds(
-            playlist,
-            track.kind,
-            getPlaylistTrackIds(playlist, track.kind).filter((trackId) => trackId !== track.id),
-          );
+          const { [track.id]: _removedVolume, ...volumes } = getPlaylistVolumes(playlist);
+
+          return {
+            ...setPlaylistTrackIds(
+              playlist,
+              track.kind,
+              getPlaylistTrackIds(playlist, track.kind).filter((trackId) => trackId !== track.id),
+            ),
+            volumes,
+          };
         }),
       }));
     },
@@ -346,7 +376,7 @@ export default function useTrackMixer() {
         }
       }
 
-      const sound = createSound(track, volumes[track.id] ?? track.initialVolume, {
+      const sound = createSound(track, getTrackVolume(selectedPlaylist, track), {
         fadeIn: true,
         isMasterMuted,
         isMuted: mutedTrackIds.has(track.id),
@@ -357,7 +387,7 @@ export default function useTrackMixer() {
       activeSounds.current.set(track.id, sound);
       setPlayingIds((previous) => new Set(previous).add(track.id));
     },
-    [isMasterMuted, isPaused, masterVolume, mutedTrackIds, stopTrack, trackById, volumes],
+    [isMasterMuted, isPaused, masterVolume, mutedTrackIds, selectedPlaylist, stopTrack, trackById],
   );
 
   //------------------------------------------------------------------------------
@@ -376,11 +406,31 @@ export default function useTrackMixer() {
   // Set Track Volume
   //------------------------------------------------------------------------------
 
-  const setTrackVolume = useCallback((trackId: string, volume: number) => {
-    setVolumes((previous) => ({ ...previous, [trackId]: volume }));
-    const sound = activeSounds.current.get(trackId);
-    if (sound) fadeSoundTo(sound, volume, 0.12);
-  }, []);
+  const setTrackVolume = useCallback(
+    (trackId: string, volume: number) => {
+      if (!selectedPlaylist) return;
+
+      updateLocalPlaylistTrackVolume(selectedPlaylist.id, trackId, volume);
+      updateLibrary((previous) => ({
+        ...previous,
+        playlists: previous.playlists.map((playlist) =>
+          playlist.id === selectedPlaylist.id
+            ? {
+                ...playlist,
+                volumes: {
+                  ...getPlaylistVolumes(playlist),
+                  [trackId]: volume,
+                },
+              }
+            : playlist,
+        ),
+      }));
+
+      const sound = activeSounds.current.get(trackId);
+      if (sound) fadeSoundTo(sound, volume, 0.12);
+    },
+    [selectedPlaylist, updateLibrary],
+  );
 
   //------------------------------------------------------------------------------
   // Set Master Volume
@@ -476,9 +526,8 @@ export default function useTrackMixer() {
         ...previous,
         tracks: previous.tracks.map((item) => (item.id === updatedTrack.id ? updatedTrack : item)),
       }));
-      setTrackVolume(updatedTrack.id, updatedTrack.initialVolume);
     },
-    [setTrackVolume, stopTrack, updateLibrary],
+    [stopTrack, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
@@ -491,23 +540,24 @@ export default function useTrackMixer() {
       await deleteLocalTrack(track.id);
 
       updateLibrary((previous) => ({
-        playlists: previous.playlists.map((playlist) =>
-          setPlaylistTrackIds(
-            setPlaylistTrackIds(
-              playlist,
-              "ambience",
-              playlist.ambienceTrackIds.filter((trackId) => trackId !== track.id),
+        playlists: previous.playlists.map((playlist) => {
+          const { [track.id]: _removedVolume, ...volumes } = getPlaylistVolumes(playlist);
+
+          return {
+            ...setPlaylistTrackIds(
+              setPlaylistTrackIds(
+                playlist,
+                "ambience",
+                playlist.ambienceTrackIds.filter((trackId) => trackId !== track.id),
+              ),
+              "environment",
+              playlist.environmentTrackIds.filter((trackId) => trackId !== track.id),
             ),
-            "environment",
-            playlist.environmentTrackIds.filter((trackId) => trackId !== track.id),
-          ),
-        ),
+            volumes,
+          };
+        }),
         tracks: previous.tracks.filter((item) => item.id !== track.id),
       }));
-      setVolumes((previous) => {
-        const { [track.id]: _deletedVolume, ...nextVolumes } = previous;
-        return nextVolumes;
-      });
       setMutedTrackIds((previous) => {
         const next = new Set(previous);
         next.delete(track.id);
