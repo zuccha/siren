@@ -187,10 +187,12 @@ export default function TrackControl({
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
           disabled={track.hasMissingAudio}
-          w="4rem"
+          gridColumn={{ base: 3, sm: "auto" }}
+          gridRow={{ base: 1, sm: "auto" }}
           onClick={() => onToggle(track)}
           size="xs"
           variant={isPlaying ? "solid" : "outline"}
+          w="4rem"
           _icon={getButtonIconStyles("xs")}
         >
           <Icon size="xs">
