@@ -64,6 +64,8 @@ const emptyTrackLibrary: TrackLibrary = {
   tracks: [],
 };
 
+const selectedPlaylistStorageKey = "siren.selected-playlist-id";
+
 //------------------------------------------------------------------------------
 // Create Track Library
 //------------------------------------------------------------------------------
@@ -147,6 +149,23 @@ function sortPlaylists(playlists: TrackPlaylist[]) {
 }
 
 //------------------------------------------------------------------------------
+// Load Selected Playlist Id
+//------------------------------------------------------------------------------
+
+function loadSelectedPlaylistId() {
+  return localStorage.getItem(selectedPlaylistStorageKey) ?? undefined;
+}
+
+//------------------------------------------------------------------------------
+// Save Selected Playlist Id
+//------------------------------------------------------------------------------
+
+function saveSelectedPlaylistId(playlistId: string | undefined) {
+  if (playlistId) localStorage.setItem(selectedPlaylistStorageKey, playlistId);
+  else localStorage.removeItem(selectedPlaylistStorageKey);
+}
+
+//------------------------------------------------------------------------------
 // Use Track Mixer
 //------------------------------------------------------------------------------
 
@@ -189,9 +208,14 @@ export default function useTrackMixer() {
   useEffect(() => {
     void loadLocalTrackLibrary().then((localLibrary) => {
       const sortedPlaylists = sortPlaylists(localLibrary.playlists);
+      const storedPlaylistId = loadSelectedPlaylistId();
+      const selectedPlaylistId =
+        sortedPlaylists.find((playlist) => playlist.id === storedPlaylistId)?.id ??
+        sortedPlaylists[0]?.id;
 
       setLibrary({ ...localLibrary, playlists: sortedPlaylists });
-      setSelectedPlaylistId(sortedPlaylists[0]?.id);
+      setSelectedPlaylistId(selectedPlaylistId);
+      saveSelectedPlaylistId(selectedPlaylistId);
     });
   }, []);
 
@@ -237,6 +261,7 @@ export default function useTrackMixer() {
 
   const selectPlaylist = useCallback((playlistId: string | undefined) => {
     setSelectedPlaylistId(playlistId);
+    saveSelectedPlaylistId(playlistId);
   }, []);
 
   //------------------------------------------------------------------------------
@@ -251,6 +276,7 @@ export default function useTrackMixer() {
         playlists: sortPlaylists([...previous.playlists, playlist]),
       }));
       setSelectedPlaylistId(playlist.id);
+      saveSelectedPlaylistId(playlist.id);
     },
     [updateLibrary],
   );
@@ -287,6 +313,7 @@ export default function useTrackMixer() {
           if (current !== playlistId) return current;
 
           if (activePlaylistId.current === playlistId) stopAllTracks();
+          saveSelectedPlaylistId(playlists[0]?.id);
           return playlists[0]?.id;
         });
 
