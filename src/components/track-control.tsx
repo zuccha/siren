@@ -165,7 +165,7 @@ export default function TrackControl({
             />
           </Grid>
         ) : (
-          <Heading minW={0} size="sm">
+          <Heading lineHeight={1} minW={0} size="sm">
             {track.name}
           </Heading>
         )}
