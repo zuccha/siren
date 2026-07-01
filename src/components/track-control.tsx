@@ -175,7 +175,7 @@ export default function TrackControl({
         )}
 
         <VolumeControl
-          gridColumn={{ base: "2 / -1", sm: "auto" }}
+          gridColumn={{ base: "1 / -1", sm: "auto" }}
           track={track}
           isMuted={isMuted}
           volume={volume}
