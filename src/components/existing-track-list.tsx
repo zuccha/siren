@@ -30,20 +30,11 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
   );
 
   return (
-    <Box
-      bg="white"
-      borderColor="gray.200"
-      borderWidth="1px"
-      color="gray.900"
-      px={3}
-      py={2}
-      rounded="sm"
-    >
+    <Box borderWidth="1px" px={3} py={2} rounded="sm">
       <Stack gap={2}>
         <Box position="relative">
           <Box
             alignItems="center"
-            color="gray.500"
             display="flex"
             h="full"
             left={2}

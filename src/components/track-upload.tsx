@@ -71,7 +71,7 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
   };
 
   return (
-    <Box bg="bg.panel" borderColor="border" borderWidth="1px" px={3} py={2} rounded="sm">
+    <Box bg="bg.panel" borderColor="border" borderWidth={1} px={3} py={2} rounded="sm">
       <Grid alignItems="center" gap={2} templateColumns="auto minmax(9rem, 1fr) auto">
         <TrackIconPicker label="New track icon" size="xs" value={icon} onIconChange={setIcon} />
         <Input

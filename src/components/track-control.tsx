@@ -95,8 +95,8 @@ export default function TrackControl({
   return (
     <Box
       bg={track.hasMissingAudio ? "bg.error" : "bg.panel"}
-      borderColor={isPlaying ? "fg" : "border"}
-      borderWidth="1px"
+      borderColor={isPlaying ? "border.inverted" : "border"}
+      borderWidth={1}
       onDragOver={onDragOver}
       onDrop={onDrop}
       opacity={isDragging ? 0.55 : 1}
