@@ -1,10 +1,12 @@
-import { Switch, type SwitchRootProps } from "@chakra-ui/react";
+import { CheckIcon, PencilIcon } from "lucide-react";
+
+import Button, { type ButtonProps } from "./button";
 
 //------------------------------------------------------------------------------
 // Edit Mode Switch
 //------------------------------------------------------------------------------
 
-type EditModeSwitchProps = Omit<SwitchRootProps, "checked" | "children" | "onCheckedChange"> & {
+type EditModeSwitchProps = Omit<ButtonProps, "children" | "onClick" | "variant"> & {
   isEditing: boolean;
   onEditingChange: (isEditing: boolean) => void;
 };
@@ -14,16 +16,17 @@ export default function EditModeSwitch({
   onEditingChange,
   ...rest
 }: EditModeSwitchProps) {
+  const Icon = isEditing ? CheckIcon : PencilIcon;
+
   return (
-    <Switch.Root
-      checked={isEditing}
-      onCheckedChange={(details) => onEditingChange(details.checked)}
+    <Button
+      onClick={() => onEditingChange(!isEditing)}
       size="sm"
+      variant={isEditing ? "solid" : "outline"}
       {...rest}
     >
-      <Switch.HiddenInput />
-      <Switch.Control />
-      <Switch.Label display={{ base: "none", sm: "inline" }}>Edit</Switch.Label>
-    </Switch.Root>
+      <Icon />
+      {isEditing ? "Done" : "Edit"}
+    </Button>
   );
 }
