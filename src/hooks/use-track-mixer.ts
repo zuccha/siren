@@ -3,10 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type ActiveSound,
   createSound,
+  fadeOutAndPause,
   fadeOutAndStop,
   fadeSoundTo,
-  pauseSound,
   resumeSound,
+  setSoundBaseVolume,
   setSoundMasterMuted,
   setSoundMasterVolume,
   setSoundMuted,
@@ -450,26 +451,19 @@ export default function useTrackMixer() {
   // Stop Track
   //------------------------------------------------------------------------------
 
-  const stopTrack = useCallback(
-    (trackId: string) => {
-      const sound = activeSounds.current.get(trackId);
-      if (!sound) return;
+  const stopTrack = useCallback((trackId: string) => {
+    const sound = activeSounds.current.get(trackId);
+    if (!sound) return;
 
-      const track = trackById.get(trackId);
-
-      if (track?.kind === "ambience") fadeOutAndStop(sound);
-      else stopSound(sound);
-
-      activeSounds.current.delete(trackId);
-      if (activeSounds.current.size === 0) activePlaylistId.current = undefined;
-      setPlayingIds((previous) => {
-        const next = new Set(previous);
-        next.delete(trackId);
-        return next;
-      });
-    },
-    [trackById],
-  );
+    fadeOutAndStop(sound);
+    activeSounds.current.delete(trackId);
+    if (activeSounds.current.size === 0) activePlaylistId.current = undefined;
+    setPlayingIds((previous) => {
+      const next = new Set(previous);
+      next.delete(trackId);
+      return next;
+    });
+  }, []);
 
   //------------------------------------------------------------------------------
   // Resume Active Sounds
@@ -477,7 +471,7 @@ export default function useTrackMixer() {
 
   const resumeActiveSounds = useCallback(() => {
     for (const sound of activeSounds.current.values()) {
-      resumeSound(sound);
+      resumeSound(sound, { fadeIn: true });
     }
 
     setIsPaused(false);
@@ -649,9 +643,12 @@ export default function useTrackMixer() {
         activePlaylistId.current === selectedPlaylist.id
           ? activeSounds.current.get(trackId)
           : undefined;
-      if (sound) fadeSoundTo(sound, volume, 0.12);
+      if (sound) {
+        if (isPaused) setSoundBaseVolume(sound, volume);
+        else fadeSoundTo(sound, volume, 0.12);
+      }
     },
-    [selectedPlaylist, updateLibrary],
+    [isPaused, selectedPlaylist, updateLibrary],
   );
 
   //------------------------------------------------------------------------------
@@ -707,7 +704,7 @@ export default function useTrackMixer() {
 
   const pauseAll = useCallback(() => {
     for (const sound of activeSounds.current.values()) {
-      pauseSound(sound);
+      fadeOutAndPause(sound);
     }
 
     setIsPaused(true);

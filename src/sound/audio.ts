@@ -10,6 +10,9 @@ export type ActiveSound = {
   isMasterMuted: boolean;
   isMuted: boolean;
   masterVolume: number;
+  pausedBaseVolume?: number;
+  pauseTimerId?: number;
+  targetBaseVolume: number;
   stopTimerId?: number;
   volumeTimerId?: number;
 };
@@ -37,6 +40,7 @@ export function createSound(
     isMasterMuted: options.isMasterMuted ?? false,
     isMuted: options.isMuted ?? false,
     masterVolume: options.masterVolume ?? 100,
+    targetBaseVolume: volume,
   };
 
   audio.loop = true;
@@ -57,15 +61,41 @@ export function createSound(
 //------------------------------------------------------------------------------
 
 export function pauseSound(sound: ActiveSound) {
+  clearPauseTimer(sound);
   sound.audio.pause();
+}
+
+//------------------------------------------------------------------------------
+// Fade Out And Pause
+//------------------------------------------------------------------------------
+
+export function fadeOutAndPause(sound: ActiveSound, duration = musicFadeDuration) {
+  clearPauseTimer(sound);
+  sound.pausedBaseVolume = sound.targetBaseVolume;
+  fadeSoundTo(sound, 0, duration);
+  sound.pauseTimerId = window.setTimeout(() => pauseSound(sound), duration * 1000);
 }
 
 //------------------------------------------------------------------------------
 // Resume Sound
 //------------------------------------------------------------------------------
 
-export function resumeSound(sound: ActiveSound) {
+export function resumeSound(sound: ActiveSound, options: { fadeIn?: boolean } = {}) {
+  clearPauseTimer(sound);
+
+  const volume = sound.pausedBaseVolume ?? sound.baseVolume;
+  if (options.fadeIn) {
+    sound.baseVolume = 0;
+    sound.audio.volume = getSoundVolume(sound);
+  }
+
   void sound.audio.play();
+
+  if (options.fadeIn) {
+    fadeSoundTo(sound, volume, musicFadeDuration);
+  }
+
+  sound.pausedBaseVolume = undefined;
 }
 
 //------------------------------------------------------------------------------
@@ -96,6 +126,17 @@ export function setSoundMuted(sound: ActiveSound, isMuted: boolean) {
 }
 
 //------------------------------------------------------------------------------
+// Set Sound Base Volume
+//------------------------------------------------------------------------------
+
+export function setSoundBaseVolume(sound: ActiveSound, volume: number) {
+  sound.baseVolume = volume;
+  sound.targetBaseVolume = volume;
+  if (sound.pausedBaseVolume !== undefined) sound.pausedBaseVolume = volume;
+  sound.audio.volume = getSoundVolume(sound);
+}
+
+//------------------------------------------------------------------------------
 // Stop Sound
 //------------------------------------------------------------------------------
 
@@ -112,6 +153,7 @@ export function stopSound(sound: ActiveSound) {
 
 export function fadeSoundTo(sound: ActiveSound, volume: number, duration = musicFadeDuration) {
   clearVolumeTimer(sound);
+  sound.targetBaseVolume = volume;
 
   if (duration <= 0) {
     sound.baseVolume = volume;
@@ -151,10 +193,22 @@ export function fadeOutAndStop(sound: ActiveSound, duration = musicFadeDuration)
 
 function clearSoundTimers(sound: ActiveSound) {
   clearVolumeTimer(sound);
+  clearPauseTimer(sound);
 
   if (sound.stopTimerId) {
     window.clearTimeout(sound.stopTimerId);
     sound.stopTimerId = undefined;
+  }
+}
+
+//------------------------------------------------------------------------------
+// Clear Pause Timer
+//------------------------------------------------------------------------------
+
+function clearPauseTimer(sound: ActiveSound) {
+  if (sound.pauseTimerId) {
+    window.clearTimeout(sound.pauseTimerId);
+    sound.pauseTimerId = undefined;
   }
 }
 
