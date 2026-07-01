@@ -4,13 +4,11 @@ import { useCallback, useState } from "react";
 import EmptyPlaylistState from "~/components/empty-playlist-state";
 import MasterVolumeControl from "~/components/master-volume-control";
 import PlaylistManager from "~/components/playlist-manager";
-import TrackLibraryDrawer from "~/components/track-library-drawer";
+import TopbarActions from "~/components/topbar-actions";
 import TrackSection from "~/components/track-section";
 import useGlobalHotkeys from "~/hooks/use-global-hotkeys";
 import useTrackMixer from "~/hooks/use-track-mixer";
 import type { Track, TrackKind } from "~/sound/tracks";
-import ThemeButton from "~/theme/theme-button";
-import EditModeSwitch from "~/ui/edit-mode-switch";
 
 //------------------------------------------------------------------------------
 // Get Available Tracks
@@ -50,15 +48,15 @@ function App() {
           >
             SirenSong
           </Heading>
-          <HStack gap={3}>
-            <TrackLibraryDrawer
+          <HStack gap={{ base: 1, sm: 3 }}>
+            <TopbarActions
+              isEditing={isEditing}
               tracks={mixer.tracks}
               onAddTrack={mixer.addLibraryTrack}
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
+              onEditingChange={setIsEditing}
             />
-            <EditModeSwitch isEditing={isEditing} onEditingChange={setIsEditing} />
-            <ThemeButton />
           </HStack>
         </Flex>
 

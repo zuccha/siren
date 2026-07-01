@@ -43,17 +43,17 @@ export default function PlaylistManager({
   const SceneIcon = isScenePlaying ? PauseIcon : PlayIcon;
 
   return (
-    <HStack align="start" gap={2} justify="space-between" wrap="wrap">
-      <HStack display={{ base: "flex", md: "none" }} flex={1} gap={2}>
+    <HStack align="start" gap={2} justify={{ base: "flex-end", md: "space-between" }} wrap="wrap">
+      <HStack display={{ base: "flex", md: "none" }} flex={1} gap={{ base: 2, md: 3 }}>
         <AddPlaylistDialog onAddPlaylist={onAddPlaylist} />
 
         <Menu.Root positioning={{ sameWidth: true }}>
           <Menu.Trigger asChild>
             <Button
-              flex={1}
               justifyContent="space-between"
-              maxW="12rem"
+              flex={1}
               minW="6rem"
+              maxW="16rem"
               size="xs"
               variant="outline"
             >

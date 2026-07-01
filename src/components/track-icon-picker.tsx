@@ -111,7 +111,6 @@ export default function TrackIconPicker({
       <Popover.Trigger asChild>
         <DynamicIconButton
           aria-label={label}
-          borderRadius="sm"
           icon={selectedIcon}
           minW={iconButtonSize}
           size={buttonSize}

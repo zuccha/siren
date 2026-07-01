@@ -1,5 +1,5 @@
 import { Box, Drawer, Flex, HStack, Input, Portal, Stack, Text } from "@chakra-ui/react";
-import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
+import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -17,17 +17,23 @@ import TrackUpload from "./track-upload";
 //------------------------------------------------------------------------------
 
 type TrackLibraryDrawerProps = {
+  hideMobileTrigger?: boolean;
+  isOpen?: boolean;
   tracks: Track[];
   onAddTrack: (input: LocalTrackInput) => Promise<void>;
   onDeleteTrack: (track: Track) => Promise<void>;
   onEditTrack: (track: Track, input: LocalTrackUpdateInput) => Promise<void>;
+  onOpenChange?: (isOpen: boolean) => void;
 };
 
 export default function TrackLibraryDrawer({
+  hideMobileTrigger = false,
+  isOpen,
   tracks,
   onAddTrack,
   onDeleteTrack,
   onEditTrack,
+  onOpenChange,
 }: TrackLibraryDrawerProps) {
   const [query, setQuery] = useState("");
   const [selectedKind, setSelectedKind] = useState<TrackKind>("ambience");
@@ -64,19 +70,31 @@ export default function TrackLibraryDrawer({
 
   return (
     <>
-      <Drawer.Root size="sm">
+      <Drawer.Root open={isOpen} onOpenChange={(details) => onOpenChange?.(details.open)} size="sm">
         <Drawer.Trigger asChild>
-          <Button size="sm" variant="outline">
+          <Button display={{ base: "none", sm: "inline-flex" }} size="sm" variant="outline">
             <LibraryIcon />
             Tracks
           </Button>
+        </Drawer.Trigger>
+        <Drawer.Trigger asChild>
+          <IconButton
+            Icon={LibraryIcon}
+            aria-label="Open tracks"
+            display={{ base: hideMobileTrigger ? "none" : "inline-flex", sm: "none" }}
+            size="sm"
+            variant="outline"
+          />
         </Drawer.Trigger>
         <Portal>
           <Drawer.Backdrop />
           <Drawer.Positioner>
             <Drawer.Content>
-              <Drawer.Header>
+              <Drawer.Header alignItems="center" display="flex" justifyContent="space-between">
                 <Drawer.Title>Tracks</Drawer.Title>
+                <Drawer.CloseTrigger asChild>
+                  <IconButton Icon={XIcon} aria-label="Close tracks" size="sm" variant="ghost" />
+                </Drawer.CloseTrigger>
               </Drawer.Header>
               <Drawer.Body>
                 <Stack gap={5}>
@@ -199,7 +217,6 @@ export default function TrackLibraryDrawer({
                   </Stack>
                 </Stack>
               </Drawer.Body>
-              <Drawer.CloseTrigger />
             </Drawer.Content>
           </Drawer.Positioner>
         </Portal>

@@ -23,7 +23,7 @@ export default function EditModeSwitch({
     >
       <Switch.HiddenInput />
       <Switch.Control />
-      <Switch.Label>Edit</Switch.Label>
+      <Switch.Label display={{ base: "none", sm: "inline" }}>Edit</Switch.Label>
     </Switch.Root>
   );
 }

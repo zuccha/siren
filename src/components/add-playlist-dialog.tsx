@@ -45,7 +45,7 @@ export default function AddPlaylistDialog({ children, onAddPlaylist }: AddPlayli
           <IconButton
             Icon={PlusIcon}
             aria-label="Add playlist"
-            mr={2}
+            borderRadius={{ base: "sm", md: "full" }}
             size="xs"
             variant="outline"
           />

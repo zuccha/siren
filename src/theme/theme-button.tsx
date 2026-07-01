@@ -22,7 +22,7 @@ export default function ThemeButton() {
       aria-label="Toggle theme"
       onClick={toggleTheme}
       size="sm"
-      variant="ghost"
+      variant={{ base: "outline", sm: "ghost" }}
     />
   );
 }
