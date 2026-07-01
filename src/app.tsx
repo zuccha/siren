@@ -132,7 +132,7 @@ function App() {
           </Grid>
         )}
       </Container>
-      {mixer.isLoaded && (
+      {mixer.isLoaded && mixer.playlists.length > 0 && (
         <MasterVolumeControl
           hasActiveTracks={mixer.hasActiveTracks}
           isMuted={mixer.isMasterMuted}
