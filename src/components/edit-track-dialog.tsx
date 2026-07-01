@@ -1,9 +1,11 @@
-import { Button, Dialog, Grid, Input, Portal, Stack, Text } from "@chakra-ui/react";
+import { Dialog, Grid, Portal, Stack, Text } from "@chakra-ui/react";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import AudioFileUpload from "~/ui/audio-file-upload";
+import Button from "~/ui/button";
+import Input from "~/ui/input";
 
 import TrackIconPicker from "./track-icon-picker";
 

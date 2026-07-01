@@ -7,7 +7,9 @@ import { Button as ChakraButton, type ButtonProps as ChakraButtonProps } from "@
 export type ButtonProps = Omit<ChakraButtonProps, "_icon">;
 
 export default function Button({ size, ...rest }: ButtonProps) {
-  return <ChakraButton {...rest} size={size} _icon={getButtonIconStyles(size)} />;
+  return (
+    <ChakraButton colorPalette="accent" {...rest} size={size} _icon={getButtonIconStyles(size)} />
+  );
 }
 
 //------------------------------------------------------------------------------

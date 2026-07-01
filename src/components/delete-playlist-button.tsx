@@ -1,8 +1,9 @@
-import { Button, Dialog, Portal, Text } from "@chakra-ui/react";
+import { Dialog, Portal, Text } from "@chakra-ui/react";
 import { Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
+import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
 
 //------------------------------------------------------------------------------

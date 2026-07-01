@@ -16,7 +16,7 @@ export type IconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> 
 
 export default function IconButton({ Icon, size, ...rest }: IconButtonProps) {
   return (
-    <ChakraIconButton {...rest} size={size}>
+    <ChakraIconButton colorPalette="accent" {...rest} size={size}>
       <Icon />
     </ChakraIconButton>
   );

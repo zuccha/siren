@@ -14,7 +14,7 @@ type DynamicIconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> 
 
 export default function DynamicIconButton({ icon, size, ...rest }: DynamicIconButtonProps) {
   return (
-    <ChakraIconButton {...rest} size={size}>
+    <ChakraIconButton colorPalette="accent" {...rest} size={size}>
       <DynamicIcon name={icon} />
     </ChakraIconButton>
   );

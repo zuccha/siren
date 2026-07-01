@@ -1,4 +1,6 @@
-import { Button, FileUpload, HStack, type FileUploadRootProps } from "@chakra-ui/react";
+import { FileUpload, HStack, type FileUploadRootProps } from "@chakra-ui/react";
+
+import Button from "./button";
 
 //------------------------------------------------------------------------------
 // Audio File Upload

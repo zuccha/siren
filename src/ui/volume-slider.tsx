@@ -22,6 +22,7 @@ export default function VolumeSlider({
   return (
     <Slider.Root
       aria-label={[ariaLabel]}
+      colorPalette="accent"
       flex="1"
       max={100}
       min={0}

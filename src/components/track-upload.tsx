@@ -1,4 +1,4 @@
-import { Box, Grid, HStack, Input, Text } from "@chakra-ui/react";
+import { Box, Grid, HStack, Text } from "@chakra-ui/react";
 import { UploadIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -6,6 +6,7 @@ import type { LocalTrackInput } from "~/sound/local-tracks";
 import type { TrackKind } from "~/sound/tracks";
 import AudioFileUpload from "~/ui/audio-file-upload";
 import Button from "~/ui/button";
+import Input from "~/ui/input";
 import VolumeSlider from "~/ui/volume-slider";
 
 import TrackIconPicker from "./track-icon-picker";

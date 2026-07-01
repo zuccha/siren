@@ -1,10 +1,11 @@
-import { Box, Flex, Input, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Stack, Text } from "@chakra-ui/react";
 import { PlusIcon, SearchIcon } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
 import type { Track } from "~/sound/tracks";
 import Button from "~/ui/button";
+import Input from "~/ui/input";
 
 //------------------------------------------------------------------------------
 // Existing Track List

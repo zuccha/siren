@@ -1,6 +1,7 @@
-import { Button, Dialog, Portal, Text } from "@chakra-ui/react";
+import { Dialog, Portal, Text } from "@chakra-ui/react";
 
 import type { Track } from "~/sound/tracks";
+import Button from "~/ui/button";
 
 //------------------------------------------------------------------------------
 // Delete Track Dialog

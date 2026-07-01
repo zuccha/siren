@@ -1,8 +1,9 @@
-import { Box, Grid, Input, Popover, Portal } from "@chakra-ui/react";
+import { Box, Grid, Popover, Portal } from "@chakra-ui/react";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { resolveTrackIcon } from "~/sound/tracks";
 import DynamicIconButton from "~/ui/dynamic-icon-button";
+import Input from "~/ui/input";
 
 import type { IconName } from "lucide-react/dynamic";
 

@@ -1,9 +1,11 @@
-import { Button, Dialog, Input, Portal } from "@chakra-ui/react";
+import { Dialog, Portal } from "@chakra-ui/react";
 import { PencilIcon } from "lucide-react";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import type { TrackPlaylist } from "~/sound/tracks";
+import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
+import Input from "~/ui/input";
 
 //------------------------------------------------------------------------------
 // Edit Playlist Dialog

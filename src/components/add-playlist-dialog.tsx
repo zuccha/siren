@@ -1,8 +1,10 @@
-import { Button, Dialog, Input, Portal } from "@chakra-ui/react";
+import { Dialog, Portal } from "@chakra-ui/react";
 import { PlusIcon } from "lucide-react";
 import { type ReactNode, useState, type KeyboardEvent } from "react";
 
+import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
+import Input from "~/ui/input";
 
 //------------------------------------------------------------------------------
 // Add Playlist Dialog

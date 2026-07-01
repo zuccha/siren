@@ -1,4 +1,4 @@
-import { Box, Drawer, Flex, HStack, Input, Portal, Stack, Text } from "@chakra-ui/react";
+import { Box, Drawer, Flex, HStack, Portal, Stack, Text } from "@chakra-ui/react";
 import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -6,6 +6,7 @@ import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-track
 import type { Track, TrackKind } from "~/sound/tracks";
 import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
+import Input from "~/ui/input";
 
 import DeleteTrackDialog from "./delete-track-dialog";
 import EditTrackDialog from "./edit-track-dialog";

@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, Heading, Input } from "@chakra-ui/react";
+import { Box, Flex, Grid, Heading } from "@chakra-ui/react";
 import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { useEffect, useState, type DragEvent } from "react";
 
@@ -6,6 +6,7 @@ import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
+import Input from "~/ui/input";
 
 import TrackIconPicker from "./track-icon-picker";
 import TrackStatusIcon from "./track-status-icon";
@@ -95,7 +96,7 @@ export default function TrackControl({
   return (
     <Box
       bg={track.hasMissingAudio ? "bg.error" : "bg.panel"}
-      borderColor={isPlaying ? "border.inverted" : "border"}
+      borderColor={isPlaying ? "accent.fg" : "border"}
       borderWidth={1}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -114,6 +115,7 @@ export default function TrackControl({
           onClick={() => onRemove(track)}
           position="absolute"
           right={0}
+          rounded="full"
           size="2xs"
           top={0}
           transform="translate(50%, -30%)"
