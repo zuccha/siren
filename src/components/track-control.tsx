@@ -124,7 +124,10 @@ export default function TrackControl({
       <Grid
         alignItems="center"
         gap={2}
-        templateColumns="auto minmax(7rem, 1fr) minmax(9rem, 14rem) auto"
+        templateColumns={{
+          base: "auto minmax(0, 1fr) auto",
+          sm: "auto minmax(0, 1fr) minmax(9rem, 14rem) auto",
+        }}
       >
         {isEditing ? (
           <Button
@@ -149,7 +152,7 @@ export default function TrackControl({
         )}
 
         {isEditing ? (
-          <Grid gap={2} minW={0} templateColumns="auto minmax(7rem, 1fr)">
+          <Grid gap={2} minW={0} templateColumns="auto minmax(0, 1fr)">
             <TrackIconPicker
               label={`${track.name} icon`}
               size="xs"
@@ -171,6 +174,7 @@ export default function TrackControl({
         )}
 
         <VolumeControl
+          gridColumn={{ base: "2 / -1", sm: "auto" }}
           track={track}
           isMuted={isMuted}
           volume={volume}
@@ -181,6 +185,8 @@ export default function TrackControl({
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
           disabled={track.hasMissingAudio}
+          gridColumn={{ base: 3, sm: "auto" }}
+          gridRow={{ base: 1, sm: "auto" }}
           minW="4.5rem"
           onClick={() => onToggle(track)}
           size="xs"

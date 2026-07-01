@@ -1,4 +1,4 @@
-import { HStack, Text } from "@chakra-ui/react";
+import { HStack, Text, type StackProps } from "@chakra-ui/react";
 import { Volume2Icon, VolumeXIcon } from "lucide-react";
 
 import type { Track } from "~/sound/tracks";
@@ -10,7 +10,7 @@ import VolumeSlider from "~/ui/volume-slider";
 //------------------------------------------------------------------------------
 
 type VolumeControlProps = {
-  gridColumn?: string;
+  gridColumn?: StackProps["gridColumn"];
   isMuted: boolean;
   track: Track;
   volume: number;
@@ -29,7 +29,7 @@ export default function VolumeControl({
   const VolumeIcon = isMuted ? VolumeXIcon : Volume2Icon;
 
   return (
-    <HStack gap={2} gridColumn={gridColumn}>
+    <HStack gap={2} gridColumn={gridColumn} minW={0}>
       <IconButton
         Icon={VolumeIcon}
         aria-label={`${isMuted ? "Unmute" : "Mute"} ${track.name}`}
