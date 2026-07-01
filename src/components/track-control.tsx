@@ -124,7 +124,7 @@ export default function TrackControl({
           right={0}
           size="2xs"
           top={0}
-          transform="translate(50%, -50%)"
+          transform="translate(50%, -30%)"
           variant="solid"
           zIndex={1}
         />
