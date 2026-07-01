@@ -25,18 +25,20 @@ export default function AudioFileUpload({
       accept="audio/*"
       flex="1"
       maxFiles={1}
+      minW={0}
       onFileChange={(details) => onFileChange(details.acceptedFiles[0])}
       {...rest}
     >
       <FileUpload.HiddenInput />
-      <HStack gap={2}>
+      <HStack gap={2} minW={0}>
         <FileUpload.Trigger asChild>
-          <Button size="xs" variant="outline">
+          <Button flexShrink={0} size="xs" variant="outline">
             Choose file
           </Button>
         </FileUpload.Trigger>
         <FileUpload.FileText
           color="fg.muted"
+          flex={1}
           fallback={file ? file.name : "No file selected"}
           fontSize="xs"
           minW={0}

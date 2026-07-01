@@ -91,18 +91,25 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
         </Button>
       </Grid>
 
-      <HStack gap={2} mt={2}>
-        <AudioFileUpload flex={2} resetKey={fileUploadKey} file={file} onFileChange={selectFile} />
-        <VolumeSlider
-          aria-label="Initial volume"
-          flex={1}
-          value={initialVolume}
-          onValueChange={setInitialVolume}
-        />
-        <Text color="fg.muted" fontSize="xs" fontVariantNumeric="tabular-nums" minW="3ch">
-          {initialVolume}
-        </Text>
-      </HStack>
+      <Grid alignItems="center" gap={2} mt={2} templateColumns={{ base: "1fr", sm: "2fr 1fr" }}>
+        <AudioFileUpload resetKey={fileUploadKey} file={file} onFileChange={selectFile} />
+        <HStack gap={0.5}>
+          <VolumeSlider
+            aria-label="Initial volume"
+            value={initialVolume}
+            onValueChange={setInitialVolume}
+          />
+          <Text
+            color="fg.muted"
+            fontSize="xs"
+            fontVariantNumeric="tabular-nums"
+            minW="3ch"
+            textAlign="right"
+          >
+            {initialVolume}
+          </Text>
+        </HStack>
+      </Grid>
 
       {error && (
         <Text color="fg.error" fontSize="xs" mt={2}>
