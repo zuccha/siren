@@ -69,7 +69,7 @@ export async function loadLocalTrackLibrary(): Promise<LocalTrackLibrary> {
 
   return {
     playlists: metadata.playlists,
-    tracks: tracks.filter((track): track is Track => Boolean(track)),
+    tracks,
   };
 }
 
@@ -115,6 +115,7 @@ export async function updateLocalTrack(track: Track, input: LocalTrackUpdateInpu
   return createLocalTrackFromMetadata(
     updatedMetadata,
     input.file ? URL.createObjectURL(input.file) : track.src,
+    !input.file && track.hasMissingAudio,
   );
 }
 
@@ -265,7 +266,7 @@ export function reorderLocalPlaylistTracks(
 
 async function loadLocalTrack(metadata: LocalTrackMetadata) {
   const blob = await readAudioBlob(metadata.blobKey);
-  if (!blob) return undefined;
+  if (!blob) return createLocalTrackFromMetadata(metadata, "", true);
 
   return createLocalTrackFromMetadata(metadata, URL.createObjectURL(blob));
 }
@@ -274,7 +275,11 @@ async function loadLocalTrack(metadata: LocalTrackMetadata) {
 // Create Local Track From Metadata
 //------------------------------------------------------------------------------
 
-function createLocalTrackFromMetadata(metadata: LocalTrackMetadata, src: string) {
+function createLocalTrackFromMetadata(
+  metadata: LocalTrackMetadata,
+  src: string,
+  hasMissingAudio = false,
+) {
   return createTrack(
     {
       id: metadata.id,
@@ -283,6 +288,7 @@ function createLocalTrackFromMetadata(metadata: LocalTrackMetadata, src: string)
       icon: metadata.icon,
       initialVolume: metadata.initialVolume,
       fileName: metadata.fileName,
+      hasMissingAudio,
     },
     metadata.kind,
     getFallbackIcon(metadata.kind),

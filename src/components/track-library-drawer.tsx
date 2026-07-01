@@ -11,7 +11,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -20,6 +19,7 @@ import IconButton from "~/ui/icon-button";
 
 import DeleteTrackDialog from "./delete-track-dialog";
 import EditTrackDialog from "./edit-track-dialog";
+import TrackStatusIcon from "./track-status-icon";
 
 //------------------------------------------------------------------------------
 // Track Library Drawer
@@ -118,6 +118,7 @@ export default function TrackLibraryDrawer({
                         <Flex
                           key={track.id}
                           align="center"
+                          bg={track.hasMissingAudio ? "bg.error" : undefined}
                           borderColor="border"
                           borderWidth="1px"
                           gap={3}
@@ -127,7 +128,7 @@ export default function TrackLibraryDrawer({
                           rounded="sm"
                         >
                           <Flex align="center" color="fg.muted" h={8} justify="center" w={8}>
-                            <DynamicIcon name={track.icon} size={18} />
+                            <TrackStatusIcon track={track} size={18} />
                           </Flex>
                           <Box flex={1} minW={0}>
                             <Stack gap={0.5} minW={0}>

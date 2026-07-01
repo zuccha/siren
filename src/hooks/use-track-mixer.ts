@@ -429,6 +429,7 @@ export default function useTrackMixer() {
   const startTrack = useCallback(
     (track: Track) => {
       if (!selectedPlaylist) return;
+      if (track.hasMissingAudio) return;
 
       if (isPaused) resumeActiveSounds();
 

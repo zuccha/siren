@@ -1,6 +1,5 @@
 import { Box, Button, Flex, Grid, Heading, Input } from "@chakra-ui/react";
 import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
 import { useEffect, useState, type DragEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -8,6 +7,7 @@ import type { Track } from "~/sound/tracks";
 import IconButton from "~/ui/icon-button";
 
 import TrackIconPicker from "./track-icon-picker";
+import TrackStatusIcon from "./track-status-icon";
 import VolumeControl from "./volume-control";
 
 //------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ export default function TrackControl({
 
   return (
     <Box
-      bg="bg.panel"
+      bg={track.hasMissingAudio ? "bg.error" : "bg.panel"}
       borderColor={isPlaying ? "fg" : "border"}
       borderWidth="1px"
       onDragOver={onDragOver}
@@ -144,7 +144,7 @@ export default function TrackControl({
           </Button>
         ) : (
           <Flex align="center" color="fg.muted" h={8} justify="center" shrink={0} w={8}>
-            <DynamicIcon name={track.icon} size={18} />
+            <TrackStatusIcon track={track} size={18} />
           </Flex>
         )}
 
@@ -180,6 +180,7 @@ export default function TrackControl({
 
         <Button
           aria-label={`${isPlaying ? "Stop" : "Play"} ${track.name}`}
+          disabled={track.hasMissingAudio}
           minW="4.5rem"
           onClick={() => onToggle(track)}
           size="xs"

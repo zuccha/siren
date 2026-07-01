@@ -30,6 +30,7 @@ export type Track = {
   icon: IconName;
   initialVolume: number;
   fileName: string;
+  hasMissingAudio: boolean;
 };
 
 //------------------------------------------------------------------------------
@@ -55,6 +56,7 @@ export type TrackInput = {
   icon?: TrackIcon;
   initialVolume?: number;
   fileName?: string;
+  hasMissingAudio?: boolean;
 };
 
 const iconImportByName = dynamicIconImports as Record<string, unknown>;
@@ -72,6 +74,7 @@ export function createTrack(track: TrackInput, kind: TrackKind, fallbackIcon: Tr
     icon: getTrackIcon(track.icon ?? fallbackIcon, fallbackIcon),
     initialVolume: track.initialVolume ?? 50,
     fileName: track.fileName ?? track.name,
+    hasMissingAudio: track.hasMissingAudio ?? false,
   };
 }
 
