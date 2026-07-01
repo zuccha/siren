@@ -300,7 +300,7 @@ function createLocalTrackFromMetadata(
 //------------------------------------------------------------------------------
 
 function createLocalTrackMetadata(input: LocalTrackInput): LocalTrackMetadata {
-  const id = `track-${crypto.randomUUID()}`;
+  const id = createLocalId("track");
 
   return {
     id,
@@ -336,12 +336,35 @@ function updateLocalTrackMetadata(
 
 function createPlaylist(name: string): TrackPlaylist {
   return {
-    id: `playlist-${crypto.randomUUID()}`,
+    id: createLocalId("playlist"),
     name: name.trim() || "Untitled playlist",
     ambienceTrackIds: [],
     environmentTrackIds: [],
     volumes: {},
   };
+}
+
+//------------------------------------------------------------------------------
+// Create Local Id
+//------------------------------------------------------------------------------
+
+function createLocalId(prefix: string) {
+  return `${prefix}-${createRandomId()}`;
+}
+
+//------------------------------------------------------------------------------
+// Create Random Id
+//------------------------------------------------------------------------------
+
+function createRandomId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+
+  if (globalThis.crypto?.getRandomValues) {
+    const randomValues = globalThis.crypto.getRandomValues(new Uint32Array(4));
+    return Array.from(randomValues, (value) => value.toString(16).padStart(8, "0")).join("-");
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 //------------------------------------------------------------------------------
