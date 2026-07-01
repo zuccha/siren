@@ -357,6 +357,22 @@ export default function useTrackMixer() {
   );
 
   //------------------------------------------------------------------------------
+  // Add Library Track
+  //------------------------------------------------------------------------------
+
+  const addLibraryTrack = useCallback(
+    async (input: LocalTrackInput) => {
+      const track = await saveLocalTrack(input);
+
+      updateLibrary((previous) => ({
+        ...previous,
+        tracks: [...previous.tracks, track],
+      }));
+    },
+    [updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
   // Remove Track From Playlist
   //------------------------------------------------------------------------------
 
@@ -683,6 +699,7 @@ export default function useTrackMixer() {
   }, []);
 
   return {
+    addLibraryTrack,
     addLocalTrack,
     addPlaylist,
     addTrackToPlaylist,

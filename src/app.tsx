@@ -53,6 +53,7 @@ function App() {
           <HStack gap={3}>
             <TrackLibraryDrawer
               tracks={mixer.tracks}
+              onAddTrack={mixer.addLibraryTrack}
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
             />
