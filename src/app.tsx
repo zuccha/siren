@@ -131,7 +131,7 @@ function App() {
       </Container>
       {mixer.isLoaded && (
         <MasterVolumeControl
-          hasActiveTracks={mixer.playingIds.size > 0}
+          hasActiveTracks={mixer.hasActiveTracks}
           isMuted={mixer.isMasterMuted}
           isPaused={mixer.isPaused}
           volume={mixer.masterVolume}

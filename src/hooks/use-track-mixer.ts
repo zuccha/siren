@@ -733,6 +733,7 @@ export default function useTrackMixer() {
     deleteTrack,
     editPlaylist,
     editTrack,
+    hasActiveTracks: playingIds.size > 0,
     isLoaded: library !== undefined,
     isMasterMuted,
     isPaused,
