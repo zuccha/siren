@@ -1,4 +1,4 @@
-import { CheckIcon, LibraryIcon, PencilIcon } from "lucide-react";
+import { CheckIcon, InfoIcon, LibraryIcon, PencilIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -20,6 +20,7 @@ type TopbarActionsProps = {
   onDeleteTrack: (track: Track) => Promise<void>;
   onEditTrack: (track: Track, input: LocalTrackUpdateInput) => Promise<void>;
   onEditingChange: (isEditing: boolean) => void;
+  onInfoOpen: () => void;
 };
 
 export default function TopbarActions({
@@ -29,6 +30,7 @@ export default function TopbarActions({
   onDeleteTrack,
   onEditTrack,
   onEditingChange,
+  onInfoOpen,
 }: TopbarActionsProps) {
   const [isTrackLibraryOpen, setIsTrackLibraryOpen] = useState(false);
   const EditIcon = isEditing ? CheckIcon : PencilIcon;
@@ -65,6 +67,14 @@ export default function TopbarActions({
         aria-label="Open tracks"
         display={{ base: "inline-flex", sm: "none" }}
         onClick={() => setIsTrackLibraryOpen(true)}
+        size="sm"
+        variant="outline"
+      />
+
+      <IconButton
+        Icon={InfoIcon}
+        aria-label="About SirenSong"
+        onClick={onInfoOpen}
         size="sm"
         variant="outline"
       />

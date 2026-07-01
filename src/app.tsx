@@ -1,6 +1,7 @@
 import { Box, Container, Flex, Grid, Heading, HStack } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 
+import AboutPage from "~/components/about-page";
 import EmptyPlaylistState from "~/components/empty-playlist-state";
 import MasterVolumeControl from "~/components/master-volume-control";
 import PlaylistManager from "~/components/playlist-manager";
@@ -26,6 +27,7 @@ function getAvailableTracks(tracks: Track[], playlistTracks: Track[], kind: Trac
 
 function App() {
   const [isEditing, setIsEditing] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const mixer = useTrackMixer();
   const toggleEditMode = useCallback(() => setIsEditing((current) => !current), []);
 
@@ -35,7 +37,7 @@ function App() {
   });
 
   return (
-    <Box minH="100vh" bg="bg.subtle" color="fg">
+    <Box minH="100vh" bg="bg" color="fg">
       <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Heading
@@ -56,6 +58,7 @@ function App() {
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
               onEditingChange={setIsEditing}
+              onInfoOpen={() => setIsAboutOpen(true)}
             />
           </HStack>
         </Flex>
@@ -143,6 +146,7 @@ function App() {
           onVolumeChange={mixer.setMasterVolume}
         />
       )}
+      {isAboutOpen && <AboutPage onClose={() => setIsAboutOpen(false)} />}
     </Box>
   );
 }
