@@ -28,6 +28,7 @@ import {
   updateLocalPlaylistTrackVolume,
   updateLocalTrack,
 } from "~/sound/local-tracks";
+import { importStarterPreset, type PresetImportProgress } from "~/sound/presets";
 import {
   type Track,
   type TrackDropPosition,
@@ -423,6 +424,23 @@ export default function useTrackMixer() {
       }));
     },
     [updateLibrary],
+  );
+
+  //------------------------------------------------------------------------------
+  // Import Preset
+  //------------------------------------------------------------------------------
+
+  const importPreset = useCallback(
+    async (onProgress?: (progress: PresetImportProgress) => void) => {
+      const localLibrary = await importStarterPreset(onProgress);
+      const sortedPlaylists = sortPlaylists(localLibrary.playlists);
+      const selectedPlaylistId = sortedPlaylists[0]?.id;
+
+      setLibrary({ ...localLibrary, playlists: sortedPlaylists });
+      setSelectedPlaylistId(selectedPlaylistId);
+      saveSelectedPlaylistId(selectedPlaylistId);
+    },
+    [],
   );
 
   //------------------------------------------------------------------------------
@@ -901,6 +919,7 @@ export default function useTrackMixer() {
     isLoaded: library !== undefined,
     isMasterMuted,
     isPaused,
+    importPreset,
     isEnvironmentPlaying: areEnvironmentTracksPlaying,
     isScenePlaying,
     masterVolume,

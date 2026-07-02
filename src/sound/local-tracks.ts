@@ -55,6 +55,48 @@ export type LocalTrackUpdateInput = {
   file?: File;
 };
 
+//------------------------------------------------------------------------------
+// Local Preset Track Input
+//------------------------------------------------------------------------------
+
+export type LocalPresetTrackInput = {
+  id: string;
+  kind: TrackKind;
+  name: string;
+  icon: string;
+  initialVolume: number;
+  fileName: string;
+  file: File;
+};
+
+//------------------------------------------------------------------------------
+// Local Preset Playlist Track Input
+//------------------------------------------------------------------------------
+
+export type LocalPresetPlaylistTrackInput = {
+  id: string;
+  volume: number;
+};
+
+//------------------------------------------------------------------------------
+// Local Preset Playlist Input
+//------------------------------------------------------------------------------
+
+export type LocalPresetPlaylistInput = {
+  name: string;
+  ambience: LocalPresetPlaylistTrackInput[];
+  environment: LocalPresetPlaylistTrackInput[];
+};
+
+//------------------------------------------------------------------------------
+// Local Preset Input
+//------------------------------------------------------------------------------
+
+export type LocalPresetInput = {
+  tracks: LocalPresetTrackInput[];
+  playlists: LocalPresetPlaylistInput[];
+};
+
 const databaseName = "siren-local-tracks";
 const objectStoreName = "audio";
 const libraryStorageKey = "siren.library";
@@ -90,6 +132,43 @@ export async function saveLocalTrack(input: LocalTrackInput) {
   });
 
   return createLocalTrackFromMetadata(metadata, URL.createObjectURL(input.file));
+}
+
+//------------------------------------------------------------------------------
+// Import Local Preset
+//------------------------------------------------------------------------------
+
+export async function importLocalPreset(input: LocalPresetInput): Promise<LocalTrackLibrary> {
+  validateLocalPresetInput(input);
+
+  const libraryMetadata = loadLocalLibraryMetadata();
+  const existingTrackIds = new Set(libraryMetadata.tracks.map((track) => track.id));
+  const presetTrackIds = new Set(input.tracks.map((track) => track.id));
+
+  if (input.tracks.some((track) => existingTrackIds.has(track.id))) {
+    throw new Error("This preset contains tracks that already exist in the library.");
+  }
+
+  const trackMetadata = input.tracks.map(createLocalPresetTrackMetadata);
+  const playlists = input.playlists.map((playlist) =>
+    createPresetPlaylist(playlist, presetTrackIds),
+  );
+
+  for (const track of input.tracks) {
+    await writeAudioBlob(track.id, track.file);
+  }
+
+  const metadata = {
+    playlists: [...libraryMetadata.playlists, ...playlists],
+    tracks: [...libraryMetadata.tracks, ...trackMetadata],
+  };
+
+  saveLocalLibraryMetadata(metadata);
+
+  return {
+    playlists: metadata.playlists,
+    tracks: await Promise.all(metadata.tracks.map(loadLocalTrack)),
+  };
 }
 
 //------------------------------------------------------------------------------
@@ -314,6 +393,22 @@ function createLocalTrackMetadata(input: LocalTrackInput): LocalTrackMetadata {
 }
 
 //------------------------------------------------------------------------------
+// Create Local Preset Track Metadata
+//------------------------------------------------------------------------------
+
+function createLocalPresetTrackMetadata(input: LocalPresetTrackInput): LocalTrackMetadata {
+  return {
+    id: input.id,
+    kind: input.kind,
+    name: input.name.trim() || removeFileExtension(input.fileName),
+    icon: input.icon.trim() || getFallbackIcon(input.kind),
+    initialVolume: input.initialVolume,
+    fileName: input.fileName,
+    blobKey: input.id,
+  };
+}
+
+//------------------------------------------------------------------------------
 // Update Local Track Metadata
 //------------------------------------------------------------------------------
 
@@ -342,6 +437,50 @@ function createPlaylist(name: string): TrackPlaylist {
     environmentTrackIds: [],
     volumes: {},
   };
+}
+
+//------------------------------------------------------------------------------
+// Create Preset Playlist
+//------------------------------------------------------------------------------
+
+function createPresetPlaylist(
+  input: LocalPresetPlaylistInput,
+  trackIds: Set<string>,
+): TrackPlaylist {
+  const ambienceTrackIds = input.ambience.map((track) => track.id);
+  const environmentTrackIds = input.environment.map((track) => track.id);
+
+  validatePresetPlaylistTracks([...ambienceTrackIds, ...environmentTrackIds], trackIds);
+
+  return {
+    id: createLocalId("playlist"),
+    name: input.name.trim() || "Untitled playlist",
+    ambienceTrackIds,
+    environmentTrackIds,
+    volumes: Object.fromEntries(
+      [...input.ambience, ...input.environment].map((track) => [track.id, track.volume]),
+    ),
+  };
+}
+
+//------------------------------------------------------------------------------
+// Validate Local Preset Input
+//------------------------------------------------------------------------------
+
+function validateLocalPresetInput(input: LocalPresetInput) {
+  const trackIds = input.tracks.map((track) => track.id);
+  if (new Set(trackIds).size !== trackIds.length) {
+    throw new Error("This preset contains duplicate track IDs.");
+  }
+}
+
+//------------------------------------------------------------------------------
+// Validate Preset Playlist Tracks
+//------------------------------------------------------------------------------
+
+function validatePresetPlaylistTracks(playlistTrackIds: string[], trackIds: Set<string>) {
+  const missingTrackId = playlistTrackIds.find((trackId) => !trackIds.has(trackId));
+  if (missingTrackId) throw new Error(`This preset references a missing track: ${missingTrackId}.`);
 }
 
 //------------------------------------------------------------------------------

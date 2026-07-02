@@ -64,7 +64,10 @@ function App() {
         </Flex>
 
         {mixer.isLoaded && mixer.playlists.length === 0 && (
-          <EmptyPlaylistState onAddPlaylist={mixer.addPlaylist} />
+          <EmptyPlaylistState
+            onAddPlaylist={mixer.addPlaylist}
+            onImportPreset={mixer.importPreset}
+          />
         )}
 
         {mixer.isLoaded && mixer.playlists.length > 0 && (

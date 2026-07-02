@@ -22,7 +22,7 @@
         { "id": "c671f267-9c70-48c2-a2c9-aaa01aae6502", "volume": 25 },
         { "id": "3752db85-228b-406e-bdff-5ac31bb7dc8b", "volume": 60 },
         { "id": "c710e1ad-5598-40cd-9848-6c1eb9604747", "volume": 50 },
-        { "id": "c710e1ad-5598-40cd-9848-6c1eb9604747", "volume": 35 },
+        { "id": "1f0bb832-a005-48bc-8144-580b4bd021dd", "volume": 35 },
         { "id": "5ee97958-38de-46e1-a3fe-d099cc9ed3b4", "volume": 55 }
       ]
     }
@@ -146,7 +146,7 @@
       "type": "environment",
       "icon": "waves-vertical",
       "defaultVolume": 60,
-      "file": "environment/Dragon Studio - River.mp3"
+      "file": "environment/Dragon Studio - River Flow.mp3"
     },
     {
       "id": "c710e1ad-5598-40cd-9848-6c1eb9604747",
@@ -154,10 +154,10 @@
       "type": "environment",
       "icon": "waves",
       "defaultVolume": 50,
-      "file": "environment/Dragon Studio - Waves.mp3"
+      "file": "environment/Dragon Studio - Ocean Waves.mp3"
     },
     {
-      "id": "c710e1ad-5598-40cd-9848-6c1eb9604747",
+      "id": "1f0bb832-a005-48bc-8144-580b4bd021dd",
       "name": "Tavern",
       "type": "environment",
       "icon": "beer",

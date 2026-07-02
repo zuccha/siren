@@ -208,7 +208,7 @@ export default function TrackSection({
               <Icon color="fg.subtle" size="sm">
                 <CircleOffIcon />
               </Icon>
-              <Text fontSize="sm">This list is empty.</Text>
+              <Text fontSize="sm">This list is empty</Text>
             </HStack>
           </Box>
         )}
