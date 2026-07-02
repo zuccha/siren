@@ -31,7 +31,7 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
   );
 
   return (
-    <Box borderWidth="1px" px={3} py={2} rounded="sm">
+    <Box bgColor="bg.panel" borderWidth="1px" px={3} py={2} rounded="sm">
       <Stack gap={2}>
         <Box position="relative">
           <Box
