@@ -135,10 +135,9 @@ function getTrackVolume(playlist: TrackPlaylist | undefined, track: Track) {
 //------------------------------------------------------------------------------
 
 function getSceneTracks(trackLibrary: TrackLibrary) {
-  const ambienceTracks =
-    trackLibrary.ambienceTracks.length === 1 ? trackLibrary.ambienceTracks : [];
+  if (trackLibrary.ambienceTracks.length > 1) return [];
 
-  return [...ambienceTracks, ...trackLibrary.environmentTracks].filter(
+  return [...trackLibrary.ambienceTracks, ...trackLibrary.environmentTracks].filter(
     (track) => !track.hasMissingAudio,
   );
 }
