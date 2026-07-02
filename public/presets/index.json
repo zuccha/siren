@@ -1,0 +1,176 @@
+{
+  "name": "Starter Preset",
+  "playlists": [
+    {
+      "name": "Preset",
+      "ambience": [
+        { "id": "31f20d14-3ddc-4fc8-913b-81cd26443306", "volume": 65 },
+        { "id": "315f0c5c-5b49-45f7-a204-4c330caab520", "volume": 40 },
+        { "id": "c12a8370-cb05-4537-b590-2c7a2fee5568", "volume": 50 },
+        { "id": "991e605e-3263-408a-ad94-5364886bd165", "volume": 40 },
+        { "id": "95d73e9d-6718-4605-a6c4-6ac3057f9264", "volume": 50 },
+        { "id": "adeb0079-60d1-4dd5-9813-bbe534160ee2", "volume": 40 },
+        { "id": "d90d11fc-04b7-4fa5-89f0-7fdefcd2bfd1", "volume": 50 },
+        { "id": "f8bb13cb-b1fb-4754-b5fe-01fb36814c1a", "volume": 50 },
+        { "id": "1425b148-d900-4728-b702-4d7e78721f8c", "volume": 50 }
+      ],
+      "environment": [
+        { "id": "13d5cd15-70c1-4fb4-923a-d26dc4afa84e", "volume": 50 },
+        { "id": "f65bd8a8-ee3e-44b2-b148-2b4c283b3cee", "volume": 60 },
+        { "id": "a60fbdf1-9734-4041-a3a6-8c2e05def1f2", "volume": 50 },
+        { "id": "7bd801ae-f386-484d-abc3-f4f7bef7845e", "volume": 50 },
+        { "id": "c671f267-9c70-48c2-a2c9-aaa01aae6502", "volume": 25 },
+        { "id": "3752db85-228b-406e-bdff-5ac31bb7dc8b", "volume": 60 },
+        { "id": "c710e1ad-5598-40cd-9848-6c1eb9604747", "volume": 50 },
+        { "id": "c710e1ad-5598-40cd-9848-6c1eb9604747", "volume": 35 },
+        { "id": "5ee97958-38de-46e1-a3fe-d099cc9ed3b4", "volume": 55 }
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "id": "31f20d14-3ddc-4fc8-913b-81cd26443306",
+      "name": "Adventure",
+      "type": "ambience",
+      "icon": "sword",
+      "defaultVolume": 65,
+      "file": "ambience/Alexander Nakarada - Adventure.mp3"
+    },
+    {
+      "id": "315f0c5c-5b49-45f7-a204-4c330caab520",
+      "name": "Combat",
+      "type": "ambience",
+      "icon": "swords",
+      "defaultVolume": 40,
+      "file": "ambience/Alexander Nakarada - Chase.mp3"
+    },
+    {
+      "id": "c12a8370-cb05-4537-b590-2c7a2fee5568",
+      "name": "Calm",
+      "type": "ambience",
+      "icon": "feather",
+      "defaultVolume": 50,
+      "file": "ambience/Alexander Nakarada - Emotionalism.mp3"
+    },
+    {
+      "id": "991e605e-3263-408a-ad94-5364886bd165",
+      "name": "Happy",
+      "type": "ambience",
+      "icon": "smile",
+      "defaultVolume": 40,
+      "file": "ambience/Alexander Nakarada - Pixel Quest.mp3"
+    },
+    {
+      "id": "95d73e9d-6718-4605-a6c4-6ac3057f9264",
+      "name": "Sad",
+      "type": "ambience",
+      "icon": "frown",
+      "defaultVolume": 50,
+      "file": "ambience/Alexander Nakarada - Horizon Flare.mp3"
+    },
+    {
+      "id": "adeb0079-60d1-4dd5-9813-bbe534160ee2",
+      "name": "Celebration",
+      "type": "ambience",
+      "icon": "party-popper",
+      "defaultVolume": 40,
+      "file": "ambience/Alexander Nakarada - Celebration.mp3"
+    },
+    {
+      "id": "d90d11fc-04b7-4fa5-89f0-7fdefcd2bfd1",
+      "name": "Mistery",
+      "type": "ambience",
+      "icon": "hat-glasses",
+      "defaultVolume": 50,
+      "file": "ambience/Alexander Nakarada - Skeleton Keys.mp3"
+    },
+    {
+      "id": "f8bb13cb-b1fb-4754-b5fe-01fb36814c1a",
+      "name": "Eerie",
+      "type": "ambience",
+      "icon": "ghost",
+      "defaultVolume": 50,
+      "file": "ambience/Alexander Nakarada - Halloween Theme 1.mp3"
+    },
+    {
+      "id": "1425b148-d900-4728-b702-4d7e78721f8c",
+      "name": "Holy",
+      "type": "ambience",
+      "icon": "church",
+      "defaultVolume": 50,
+      "file": "ambience/Alexander Nakarada - Fantasy Ambience.mp3"
+    },
+    {
+      "id": "13d5cd15-70c1-4fb4-923a-d26dc4afa84e",
+      "name": "Birds",
+      "type": "environment",
+      "icon": "bird",
+      "defaultVolume": 50,
+      "file": "environment/Dragon Studio - Birds.mp3"
+    },
+    {
+      "id": "f65bd8a8-ee3e-44b2-b148-2b4c283b3cee",
+      "name": "Crickets",
+      "type": "environment",
+      "icon": "bird",
+      "defaultVolume": 60,
+      "file": "environment/Dragon Studio - Crickets.mp3"
+    },
+    {
+      "id": "a60fbdf1-9734-4041-a3a6-8c2e05def1f2",
+      "name": "Rain",
+      "type": "environment",
+      "icon": "cloud-rain-wind",
+      "defaultVolume": 50,
+      "file": "environment/Dragon Studio - Rain.mp3"
+    },
+    {
+      "id": "7bd801ae-f386-484d-abc3-f4f7bef7845e",
+      "name": "Thunder",
+      "type": "environment",
+      "icon": "zap",
+      "defaultVolume": 50,
+      "file": "environment/Dragon Studio - Thunder.mp3"
+    },
+    {
+      "id": "c671f267-9c70-48c2-a2c9-aaa01aae6502",
+      "name": "Wind",
+      "type": "environment",
+      "icon": "wind",
+      "defaultVolume": 25,
+      "file": "environment/Dragon Studio - Wind.mp3"
+    },
+    {
+      "id": "3752db85-228b-406e-bdff-5ac31bb7dc8b",
+      "name": "River",
+      "type": "environment",
+      "icon": "waves-vertical",
+      "defaultVolume": 60,
+      "file": "environment/Dragon Studio - River.mp3"
+    },
+    {
+      "id": "c710e1ad-5598-40cd-9848-6c1eb9604747",
+      "name": "Waves",
+      "type": "environment",
+      "icon": "waves",
+      "defaultVolume": 50,
+      "file": "environment/Dragon Studio - Waves.mp3"
+    },
+    {
+      "id": "c710e1ad-5598-40cd-9848-6c1eb9604747",
+      "name": "Tavern",
+      "type": "environment",
+      "icon": "beer",
+      "defaultVolume": 35,
+      "file": "environment/Bruno Boselli - Tavern.mp3"
+    },
+    {
+      "id": "5ee97958-38de-46e1-a3fe-d099cc9ed3b4",
+      "name": "Village",
+      "type": "environment",
+      "icon": "shop",
+      "defaultVolume": 55,
+      "file": "environment/Ramon Mineiro - Village.mp3"
+    }
+  ]
+}
