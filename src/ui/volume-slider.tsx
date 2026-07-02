@@ -15,6 +15,7 @@ type VolumeSliderProps = Omit<
 
 export default function VolumeSlider({
   "aria-label": ariaLabel,
+  colorPalette = "accent",
   value,
   onValueChange,
   ...rest
@@ -22,7 +23,7 @@ export default function VolumeSlider({
   return (
     <Slider.Root
       aria-label={[ariaLabel]}
-      colorPalette="accent"
+      colorPalette={colorPalette}
       flex="1"
       max={100}
       min={0}
@@ -32,10 +33,10 @@ export default function VolumeSlider({
       {...rest}
     >
       <Slider.Control>
-        <Slider.Track>
+        <Slider.Track bgColor={`${colorPalette}.emphasized`}>
           <Slider.Range />
         </Slider.Track>
-        <Slider.Thumb index={0}>
+        <Slider.Thumb bgColor={`${colorPalette}.contrast`} index={0}>
           <Slider.HiddenInput />
         </Slider.Thumb>
       </Slider.Control>
