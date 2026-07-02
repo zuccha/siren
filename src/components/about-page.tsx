@@ -181,6 +181,20 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                     </HStack>
                   </Stack>
                 </Stack>
+
+                <DocsSection title="Credits">
+                  <Text>App created by zuccha.</Text>
+                  <Text>
+                    Preset ambience tracks by Alexander Nakarada (
+                    <a href="(https://creatorchords.com)" target="_blank">
+                      https://creatorchords.com
+                    </a>
+                    ).
+                  </Text>
+                  <Text>
+                    Preset environment tracks by Bruno Boselli, Dragon Studio, and Ramon Mineiro.
+                  </Text>
+                </DocsSection>
               </Stack>
             </Container>
           </Dialog.Content>
