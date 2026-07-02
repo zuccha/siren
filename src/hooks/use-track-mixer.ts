@@ -458,12 +458,32 @@ export default function useTrackMixer() {
   );
 
   //------------------------------------------------------------------------------
+  // Stop Track
+  //------------------------------------------------------------------------------
+
+  const stopTrack = useCallback((trackId: string) => {
+    const sound = activeSounds.current.get(trackId);
+    if (!sound) return;
+
+    fadeOutAndStop(sound);
+    activeSounds.current.delete(trackId);
+    if (activeSounds.current.size === 0) activePlaylistId.current = undefined;
+    setPlayingIds((previous) => {
+      const next = new Set(previous);
+      next.delete(trackId);
+      return next;
+    });
+  }, []);
+
+  //------------------------------------------------------------------------------
   // Remove Track From Playlist
   //------------------------------------------------------------------------------
 
   const removeTrackFromPlaylist = useCallback(
     (track: Track) => {
       if (!selectedPlaylist) return;
+
+      if (activePlaylistId.current === selectedPlaylist.id) stopTrack(track.id);
 
       removeLocalPlaylistTrack(selectedPlaylist.id, track.id);
       updateLibrary((previous) => ({
@@ -483,26 +503,8 @@ export default function useTrackMixer() {
         }),
       }));
     },
-    [selectedPlaylist, updateLibrary],
+    [selectedPlaylist, stopTrack, updateLibrary],
   );
-
-  //------------------------------------------------------------------------------
-  // Stop Track
-  //------------------------------------------------------------------------------
-
-  const stopTrack = useCallback((trackId: string) => {
-    const sound = activeSounds.current.get(trackId);
-    if (!sound) return;
-
-    fadeOutAndStop(sound);
-    activeSounds.current.delete(trackId);
-    if (activeSounds.current.size === 0) activePlaylistId.current = undefined;
-    setPlayingIds((previous) => {
-      const next = new Set(previous);
-      next.delete(trackId);
-      return next;
-    });
-  }, []);
 
   //------------------------------------------------------------------------------
   // Resume Active Sounds
