@@ -1,5 +1,5 @@
 import { Box, Container, Flex, Grid, Heading, HStack } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import AboutPage from "~/components/about-page";
 import EmptyPlaylistState from "~/components/empty-playlist-state";
@@ -28,11 +28,25 @@ function getAvailableTracks(tracks: Track[], playlistTracks: Track[], kind: Trac
 
 function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isTrackLibraryOpen, setIsTrackLibraryOpen] = useState(false);
   const mixer = useTrackMixer();
+
+  //------------------------------------------------------------------------------
+  // Toggle Track Library
+  //------------------------------------------------------------------------------
+
+  const toggleTrackLibrary = useCallback(() => {
+    setIsTrackLibraryOpen((current) => !current);
+  }, []);
 
   return (
     <Box minH="100vh" bg="bg" color="fg">
-      <AppHotkeys onPauseToggle={mixer.togglePauseAll} />
+      <AppHotkeys
+        onMasterMuteToggle={mixer.toggleMasterMute}
+        onPauseToggle={mixer.togglePauseAll}
+        onSceneToggle={mixer.toggleScene}
+        onTracksToggle={toggleTrackLibrary}
+      />
       <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Heading
@@ -47,12 +61,14 @@ function App() {
           </Heading>
           <HStack gap={{ base: 1, sm: 3 }}>
             <TopbarActions
+              isTrackLibraryOpen={isTrackLibraryOpen}
               tracks={mixer.tracks}
               onAddTrack={mixer.addLibraryTrack}
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
               onImportPreset={mixer.importPreset}
               onInfoOpen={() => setIsAboutOpen(true)}
+              onTrackLibraryOpenChange={setIsTrackLibraryOpen}
             />
           </HStack>
         </Flex>
@@ -150,15 +166,26 @@ function App() {
 //------------------------------------------------------------------------------
 
 type AppHotkeysProps = {
+  onMasterMuteToggle: () => void;
   onPauseToggle: () => void;
+  onSceneToggle: () => void;
+  onTracksToggle: () => void;
 };
 
-function AppHotkeys({ onPauseToggle }: AppHotkeysProps) {
+function AppHotkeys({
+  onMasterMuteToggle,
+  onPauseToggle,
+  onSceneToggle,
+  onTracksToggle,
+}: AppHotkeysProps) {
   const { toggleEditMode } = useEditMode();
 
   useGlobalHotkeys({
     onEditToggle: toggleEditMode,
+    onMasterMuteToggle,
     onPauseToggle,
+    onSceneToggle,
+    onTracksToggle,
   });
 
   return null;

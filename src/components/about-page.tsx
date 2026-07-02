@@ -179,6 +179,22 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                       <Kbd>P</Kbd>
                       <Text>Pause or resume the master player</Text>
                     </HStack>
+                    <HStack gap={2}>
+                      <Kbd>Space</Kbd>
+                      <Text>Pause or resume the master player outside controls</Text>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Kbd>S</Kbd>
+                      <Text>Play or pause the current scene</Text>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Kbd>M</Kbd>
+                      <Text>Mute or unmute the master volume</Text>
+                    </HStack>
+                    <HStack gap={2}>
+                      <Kbd>T</Kbd>
+                      <Text>Open or close the track library</Text>
+                    </HStack>
                   </Stack>
                 </Stack>
 

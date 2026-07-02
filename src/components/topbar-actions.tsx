@@ -1,5 +1,4 @@
 import { CheckIcon, InfoIcon, LibraryIcon, PencilIcon } from "lucide-react";
-import { useState } from "react";
 
 import { useEditMode } from "~/edit-mode";
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -16,6 +15,7 @@ import TrackLibraryDrawer from "./track-library-drawer";
 //------------------------------------------------------------------------------
 
 type TopbarActionsProps = {
+  isTrackLibraryOpen: boolean;
   tracks: Track[];
   onAddTrack: (input: LocalTrackInput) => Promise<void>;
   onDeleteTrack: (track: Track) => Promise<void>;
@@ -25,18 +25,20 @@ type TopbarActionsProps = {
     onProgress?: (progress: PresetImportProgress) => void,
   ) => Promise<void>;
   onInfoOpen: () => void;
+  onTrackLibraryOpenChange: (isOpen: boolean) => void;
 };
 
 export default function TopbarActions({
+  isTrackLibraryOpen,
   tracks,
   onAddTrack,
   onDeleteTrack,
   onEditTrack,
   onImportPreset,
   onInfoOpen,
+  onTrackLibraryOpenChange,
 }: TopbarActionsProps) {
   const { isEditing, toggleEditMode } = useEditMode();
-  const [isTrackLibraryOpen, setIsTrackLibraryOpen] = useState(false);
   const EditIcon = isEditing ? CheckIcon : PencilIcon;
 
   return (
@@ -60,14 +62,14 @@ export default function TopbarActions({
         onDeleteTrack={onDeleteTrack}
         onEditTrack={onEditTrack}
         onImportPreset={onImportPreset}
-        onOpenChange={setIsTrackLibraryOpen}
+        onOpenChange={onTrackLibraryOpenChange}
       />
 
       <IconButton
         Icon={LibraryIcon}
         aria-label="Open tracks"
         display={{ base: "inline-flex", sm: "none" }}
-        onClick={() => setIsTrackLibraryOpen(true)}
+        onClick={() => onTrackLibraryOpenChange(true)}
         size="sm"
         variant="outline"
       />
