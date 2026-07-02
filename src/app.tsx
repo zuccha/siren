@@ -1,5 +1,5 @@
 import { Box, Container, Flex, Grid, Heading, HStack } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import AboutPage from "~/components/about-page";
 import EmptyPlaylistState from "~/components/empty-playlist-state";
@@ -7,6 +7,7 @@ import MasterVolumeControl from "~/components/master-volume-control";
 import PlaylistManager from "~/components/playlist-manager";
 import TopbarActions from "~/components/topbar-actions";
 import TrackSection from "~/components/track-section";
+import { useEditMode } from "~/edit-mode";
 import useGlobalHotkeys from "~/hooks/use-global-hotkeys";
 import useTrackMixer from "~/hooks/use-track-mixer";
 import type { Track, TrackKind } from "~/sound/tracks";
@@ -26,18 +27,12 @@ function getAvailableTracks(tracks: Track[], playlistTracks: Track[], kind: Trac
 //------------------------------------------------------------------------------
 
 function App() {
-  const [isEditing, setIsEditing] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const mixer = useTrackMixer();
-  const toggleEditMode = useCallback(() => setIsEditing((current) => !current), []);
-
-  useGlobalHotkeys({
-    onEditToggle: toggleEditMode,
-    onPauseToggle: mixer.togglePauseAll,
-  });
 
   return (
     <Box minH="100vh" bg="bg" color="fg">
+      <AppHotkeys onPauseToggle={mixer.togglePauseAll} />
       <Container maxW="7xl" px={{ base: 4, md: 8 }} pt={{ base: 5, md: 8 }} pb={28}>
         <Flex align="center" justify="space-between" gap={4} mb={{ base: 2, md: 4 }}>
           <Heading
@@ -52,12 +47,10 @@ function App() {
           </Heading>
           <HStack gap={{ base: 1, sm: 3 }}>
             <TopbarActions
-              isEditing={isEditing}
               tracks={mixer.tracks}
               onAddTrack={mixer.addLibraryTrack}
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
-              onEditingChange={setIsEditing}
               onImportPreset={mixer.importPreset}
               onInfoOpen={() => setIsAboutOpen(true)}
             />
@@ -74,7 +67,6 @@ function App() {
         {mixer.isLoaded && mixer.playlists.length > 0 && (
           <Grid gap={{ base: 5, md: 6 }}>
             <PlaylistManager
-              isEditing={isEditing}
               isScenePlaying={mixer.isScenePlaying}
               playingPlaylistId={mixer.playingPlaylistId}
               playlists={mixer.playlists}
@@ -97,7 +89,6 @@ function App() {
                   "ambience",
                 )}
                 tracks={mixer.trackLibrary.ambienceTracks}
-                isEditing={isEditing}
                 mutedTrackIds={mixer.mutedTrackIds}
                 playingIds={mixer.playingIds}
                 volumes={mixer.volumes}
@@ -120,7 +111,6 @@ function App() {
                   "environment",
                 )}
                 tracks={mixer.trackLibrary.environmentTracks}
-                isEditing={isEditing}
                 isPlayingAll={mixer.isEnvironmentPlaying}
                 mutedTrackIds={mixer.mutedTrackIds}
                 playingIds={mixer.playingIds}
@@ -153,6 +143,25 @@ function App() {
       {isAboutOpen && <AboutPage onClose={() => setIsAboutOpen(false)} />}
     </Box>
   );
+}
+
+//------------------------------------------------------------------------------
+// App Hotkeys
+//------------------------------------------------------------------------------
+
+type AppHotkeysProps = {
+  onPauseToggle: () => void;
+};
+
+function AppHotkeys({ onPauseToggle }: AppHotkeysProps) {
+  const { toggleEditMode } = useEditMode();
+
+  useGlobalHotkeys({
+    onEditToggle: toggleEditMode,
+    onPauseToggle,
+  });
+
+  return null;
 }
 
 export default App;

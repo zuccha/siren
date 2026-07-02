@@ -2,6 +2,7 @@ import { Box, Flex, Grid, Heading } from "@chakra-ui/react";
 import { GripVerticalIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { useEffect, useState, type DragEvent } from "react";
 
+import { useEditMode } from "~/edit-mode";
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track } from "~/sound/tracks";
 import Button from "~/ui/button";
@@ -18,7 +19,6 @@ import VolumeControl from "./volume-control";
 
 type TrackControlProps = {
   track: Track;
-  isEditing: boolean;
   isDragging: boolean;
   isMuted: boolean;
   isPlaying: boolean;
@@ -36,7 +36,6 @@ type TrackControlProps = {
 
 export default function TrackControl({
   track,
-  isEditing,
   isDragging,
   isMuted,
   isPlaying,
@@ -51,6 +50,7 @@ export default function TrackControl({
   onToggle,
   onVolumeChange,
 }: TrackControlProps) {
+  const { isEditing } = useEditMode();
   const PlayStateIcon = isPlaying ? PauseIcon : PlayIcon;
   const [draftName, setDraftName] = useState(track.name);
   const [draftIcon, setDraftIcon] = useState<string>(track.icon);

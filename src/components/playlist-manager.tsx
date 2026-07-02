@@ -1,6 +1,7 @@
 import { HStack, Icon, Menu, Portal, Span, Text } from "@chakra-ui/react";
 import { CheckIcon, ChevronDownIcon, PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 
+import { useEditMode } from "~/edit-mode";
 import type { TrackPlaylist } from "~/sound/tracks";
 import Button from "~/ui/button";
 
@@ -13,7 +14,6 @@ import EditPlaylistDialog from "./edit-playlist-dialog";
 //------------------------------------------------------------------------------
 
 type PlaylistManagerProps = {
-  isEditing: boolean;
   isScenePlaying: boolean;
   playingPlaylistId: string | undefined;
   playlists: TrackPlaylist[];
@@ -27,7 +27,6 @@ type PlaylistManagerProps = {
 };
 
 export default function PlaylistManager({
-  isEditing,
   isScenePlaying,
   playingPlaylistId,
   playlists,
@@ -39,6 +38,7 @@ export default function PlaylistManager({
   onToggleScene,
   onSelectPlaylist,
 }: PlaylistManagerProps) {
+  const { isEditing } = useEditMode();
   const selectedPlaylist = playlists.find((playlist) => playlist.id === selectedPlaylistId);
   const SceneIcon = isScenePlaying ? PauseIcon : PlayIcon;
 

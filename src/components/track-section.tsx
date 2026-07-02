@@ -2,6 +2,7 @@ import { Box, Heading, HStack, Icon, Stack, Text } from "@chakra-ui/react";
 import { CircleOffIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { Fragment, useState, type DragEvent } from "react";
 
+import { useEditMode } from "~/edit-mode";
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
 import type { Track, TrackDropPosition } from "~/sound/tracks";
 import Button from "~/ui/button";
@@ -32,7 +33,6 @@ type TrackSectionProps = {
   title: string;
   availableTracks: Track[];
   tracks: Track[];
-  isEditing: boolean;
   isPlayingAll?: boolean;
   mutedTrackIds: Set<string>;
   playingIds: Set<string>;
@@ -59,7 +59,6 @@ export default function TrackSection({
   title,
   availableTracks,
   tracks,
-  isEditing,
   isPlayingAll = false,
   mutedTrackIds,
   playingIds,
@@ -74,6 +73,7 @@ export default function TrackSection({
   onUpload,
   onVolumeChange,
 }: TrackSectionProps) {
+  const { isEditing } = useEditMode();
   const [draggedTrackId, setDraggedTrackId] = useState<string>();
   const [dropTarget, setDropTarget] = useState<TrackDropTarget>();
   const PlayAllIcon = isPlayingAll ? PauseIcon : PlayIcon;
@@ -230,7 +230,6 @@ export default function TrackSection({
             </Box>
             <TrackControl
               track={track}
-              isEditing={isEditing}
               isDragging={draggedTrackId === track.id}
               isMuted={mutedTrackIds.has(track.id)}
               isPlaying={playingIds.has(track.id)}

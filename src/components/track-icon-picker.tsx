@@ -119,7 +119,12 @@ export default function TrackIconPicker({
   };
 
   return (
-    <Popover.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
+    <Popover.Root
+      lazyMount
+      open={isOpen}
+      unmountOnExit
+      onOpenChange={(details) => setIsOpen(details.open)}
+    >
       <Popover.Trigger asChild>
         <TrackIconButton
           aria-label={label}
