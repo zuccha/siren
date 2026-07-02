@@ -11,6 +11,15 @@ export type PresetImportProgress = {
   total: number;
 };
 
+//------------------------------------------------------------------------------
+// Preset Import Options
+//------------------------------------------------------------------------------
+
+export type PresetImportOptions = {
+  existingTrackIds?: Set<string>;
+  shouldCreatePlaylists: boolean;
+};
+
 type PresetManifest = {
   name: string;
   playlists: PresetPlaylist[];
@@ -43,9 +52,12 @@ const presetBasePath = `${import.meta.env.BASE_URL}presets/`;
 // Import Starter Preset
 //------------------------------------------------------------------------------
 
-export async function importStarterPreset(onProgress?: (progress: PresetImportProgress) => void) {
+export async function importStarterPreset(
+  options: PresetImportOptions,
+  onProgress?: (progress: PresetImportProgress) => void,
+) {
   const manifest = await loadPresetManifest();
-  const preset = await createLocalPresetInput(manifest, onProgress);
+  const preset = await createLocalPresetInput(manifest, options, onProgress);
 
   return importLocalPreset(preset);
 }
@@ -67,12 +79,14 @@ async function loadPresetManifest() {
 
 async function createLocalPresetInput(
   manifest: PresetManifest,
+  options: PresetImportOptions,
   onProgress?: (progress: PresetImportProgress) => void,
 ): Promise<LocalPresetInput> {
   const tracks = [];
+  const presetTracks = manifest.tracks.filter((track) => !options.existingTrackIds?.has(track.id));
 
-  for (const [index, track] of manifest.tracks.entries()) {
-    onProgress?.({ current: index, total: manifest.tracks.length });
+  for (const [index, track] of presetTracks.entries()) {
+    onProgress?.({ current: index, total: presetTracks.length });
     tracks.push({
       id: track.id,
       kind: track.type,
@@ -82,11 +96,12 @@ async function createLocalPresetInput(
       fileName: getPresetFileName(track.file),
       file: await loadPresetTrackFile(track.file),
     });
-    onProgress?.({ current: index + 1, total: manifest.tracks.length });
+    onProgress?.({ current: index + 1, total: presetTracks.length });
   }
 
   return {
     playlists: manifest.playlists,
+    shouldCreatePlaylists: options.shouldCreatePlaylists,
     tracks,
   };
 }

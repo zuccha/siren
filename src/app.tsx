@@ -58,6 +58,7 @@ function App() {
               onDeleteTrack={mixer.deleteTrack}
               onEditTrack={mixer.editTrack}
               onEditingChange={setIsEditing}
+              onImportPreset={mixer.importPreset}
               onInfoOpen={() => setIsAboutOpen(true)}
             />
           </HStack>

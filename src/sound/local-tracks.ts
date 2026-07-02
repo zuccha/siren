@@ -33,6 +33,14 @@ export type LocalTrackLibrary = {
 };
 
 //------------------------------------------------------------------------------
+// Local Preset Import Result
+//------------------------------------------------------------------------------
+
+export type LocalPresetImportResult = LocalTrackLibrary & {
+  createdPlaylistIds: string[];
+};
+
+//------------------------------------------------------------------------------
 // Local Track Input
 //------------------------------------------------------------------------------
 
@@ -95,6 +103,7 @@ export type LocalPresetPlaylistInput = {
 export type LocalPresetInput = {
   tracks: LocalPresetTrackInput[];
   playlists: LocalPresetPlaylistInput[];
+  shouldCreatePlaylists: boolean;
 };
 
 const databaseName = "siren-local-tracks";
@@ -138,34 +147,36 @@ export async function saveLocalTrack(input: LocalTrackInput) {
 // Import Local Preset
 //------------------------------------------------------------------------------
 
-export async function importLocalPreset(input: LocalPresetInput): Promise<LocalTrackLibrary> {
+export async function importLocalPreset(input: LocalPresetInput): Promise<LocalPresetImportResult> {
   validateLocalPresetInput(input);
 
   const libraryMetadata = loadLocalLibraryMetadata();
   const existingTrackIds = new Set(libraryMetadata.tracks.map((track) => track.id));
-  const presetTrackIds = new Set(input.tracks.map((track) => track.id));
+  const presetTrackIds = new Set([
+    ...libraryMetadata.tracks.map((track) => track.id),
+    ...input.tracks.map((track) => track.id),
+  ]);
+  const newTracks = input.tracks.filter((track) => !existingTrackIds.has(track.id));
+  const trackMetadata = newTracks.map(createLocalPresetTrackMetadata);
+  const presetPlaylists = input.shouldCreatePlaylists
+    ? input.playlists
+        .map((playlist) => createPresetPlaylist(playlist, presetTrackIds))
+        .filter((playlist) => !hasSamePresetPlaylist(libraryMetadata.playlists, playlist))
+    : [];
 
-  if (input.tracks.some((track) => existingTrackIds.has(track.id))) {
-    throw new Error("This preset contains tracks that already exist in the library.");
-  }
-
-  const trackMetadata = input.tracks.map(createLocalPresetTrackMetadata);
-  const playlists = input.playlists.map((playlist) =>
-    createPresetPlaylist(playlist, presetTrackIds),
-  );
-
-  for (const track of input.tracks) {
+  for (const track of newTracks) {
     await writeAudioBlob(track.id, track.file);
   }
 
   const metadata = {
-    playlists: [...libraryMetadata.playlists, ...playlists],
+    playlists: [...libraryMetadata.playlists, ...presetPlaylists],
     tracks: [...libraryMetadata.tracks, ...trackMetadata],
   };
 
   saveLocalLibraryMetadata(metadata);
 
   return {
+    createdPlaylistIds: presetPlaylists.map((playlist) => playlist.id),
     playlists: metadata.playlists,
     tracks: await Promise.all(metadata.tracks.map(loadLocalTrack)),
   };
@@ -481,6 +492,55 @@ function validateLocalPresetInput(input: LocalPresetInput) {
 function validatePresetPlaylistTracks(playlistTrackIds: string[], trackIds: Set<string>) {
   const missingTrackId = playlistTrackIds.find((trackId) => !trackIds.has(trackId));
   if (missingTrackId) throw new Error(`This preset references a missing track: ${missingTrackId}.`);
+}
+
+//------------------------------------------------------------------------------
+// Has Same Preset Playlist
+//------------------------------------------------------------------------------
+
+function hasSamePresetPlaylist(playlists: TrackPlaylist[], presetPlaylist: TrackPlaylist) {
+  return playlists.some((playlist) => isSamePresetPlaylist(playlist, presetPlaylist));
+}
+
+//------------------------------------------------------------------------------
+// Is Same Preset Playlist
+//------------------------------------------------------------------------------
+
+function isSamePresetPlaylist(playlist: TrackPlaylist, presetPlaylist: TrackPlaylist) {
+  return (
+    playlist.name === presetPlaylist.name &&
+    areTrackIdsEqual(playlist.ambienceTrackIds, presetPlaylist.ambienceTrackIds) &&
+    areTrackIdsEqual(playlist.environmentTrackIds, presetPlaylist.environmentTrackIds) &&
+    areVolumesEqual(getPlaylistVolumes(playlist), getPlaylistVolumes(presetPlaylist))
+  );
+}
+
+//------------------------------------------------------------------------------
+// Are Track Ids Equal
+//------------------------------------------------------------------------------
+
+function areTrackIdsEqual(firstTrackIds: string[], secondTrackIds: string[]) {
+  return (
+    firstTrackIds.length === secondTrackIds.length &&
+    firstTrackIds.every((trackId, index) => trackId === secondTrackIds[index])
+  );
+}
+
+//------------------------------------------------------------------------------
+// Are Volumes Equal
+//------------------------------------------------------------------------------
+
+function areVolumesEqual(
+  firstVolumes: Record<string, number>,
+  secondVolumes: Record<string, number>,
+) {
+  const trackIds = new Set([...Object.keys(firstVolumes), ...Object.keys(secondVolumes)]);
+
+  for (const trackId of trackIds) {
+    if (firstVolumes[trackId] !== secondVolumes[trackId]) return false;
+  }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------

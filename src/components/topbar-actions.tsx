@@ -2,6 +2,7 @@ import { CheckIcon, InfoIcon, LibraryIcon, PencilIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
+import type { PresetImportOptions, PresetImportProgress } from "~/sound/presets";
 import type { Track } from "~/sound/tracks";
 import ThemeButton from "~/theme/theme-button";
 import EditModeSwitch from "~/ui/edit-mode-switch";
@@ -20,6 +21,10 @@ type TopbarActionsProps = {
   onDeleteTrack: (track: Track) => Promise<void>;
   onEditTrack: (track: Track, input: LocalTrackUpdateInput) => Promise<void>;
   onEditingChange: (isEditing: boolean) => void;
+  onImportPreset: (
+    options: PresetImportOptions,
+    onProgress?: (progress: PresetImportProgress) => void,
+  ) => Promise<void>;
   onInfoOpen: () => void;
 };
 
@@ -30,6 +35,7 @@ export default function TopbarActions({
   onDeleteTrack,
   onEditTrack,
   onEditingChange,
+  onImportPreset,
   onInfoOpen,
 }: TopbarActionsProps) {
   const [isTrackLibraryOpen, setIsTrackLibraryOpen] = useState(false);
@@ -59,6 +65,7 @@ export default function TopbarActions({
         onAddTrack={onAddTrack}
         onDeleteTrack={onDeleteTrack}
         onEditTrack={onEditTrack}
+        onImportPreset={onImportPreset}
         onOpenChange={setIsTrackLibraryOpen}
       />
 

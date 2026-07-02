@@ -28,7 +28,11 @@ import {
   updateLocalPlaylistTrackVolume,
   updateLocalTrack,
 } from "~/sound/local-tracks";
-import { importStarterPreset, type PresetImportProgress } from "~/sound/presets";
+import {
+  importStarterPreset,
+  type PresetImportOptions,
+  type PresetImportProgress,
+} from "~/sound/presets";
 import {
   type Track,
   type TrackDropPosition,
@@ -431,16 +435,26 @@ export default function useTrackMixer() {
   //------------------------------------------------------------------------------
 
   const importPreset = useCallback(
-    async (onProgress?: (progress: PresetImportProgress) => void) => {
-      const localLibrary = await importStarterPreset(onProgress);
+    async (options: PresetImportOptions, onProgress?: (progress: PresetImportProgress) => void) => {
+      const localLibrary = await importStarterPreset(
+        {
+          ...options,
+          existingTrackIds: new Set(tracks.map((track) => track.id)),
+        },
+        onProgress,
+      );
       const sortedPlaylists = sortPlaylists(localLibrary.playlists);
-      const selectedPlaylistId = sortedPlaylists[0]?.id;
+      const selectedPlaylistId =
+        sortedPlaylists.find((playlist) => playlist.id === localLibrary.createdPlaylistIds[0])
+          ?.id ??
+        sortedPlaylists.find((playlist) => playlist.id === selectedPlaylist?.id)?.id ??
+        sortedPlaylists[0]?.id;
 
       setLibrary({ ...localLibrary, playlists: sortedPlaylists });
       setSelectedPlaylistId(selectedPlaylistId);
       saveSelectedPlaylistId(selectedPlaylistId);
     },
-    [],
+    [selectedPlaylist?.id, tracks],
   );
 
   //------------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 import { Box, Drawer, Flex, HStack, Portal, Stack, Text } from "@chakra-ui/react";
-import { LibraryIcon, PencilIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
+import { DownloadIcon, LibraryIcon, PencilIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { LocalTrackInput, LocalTrackUpdateInput } from "~/sound/local-tracks";
+import type { PresetImportOptions, PresetImportProgress } from "~/sound/presets";
 import type { Track, TrackKind } from "~/sound/tracks";
 import Button from "~/ui/button";
 import IconButton from "~/ui/icon-button";
@@ -10,6 +11,7 @@ import Input from "~/ui/input";
 
 import DeleteTrackDialog from "./delete-track-dialog";
 import EditTrackDialog from "./edit-track-dialog";
+import ImportPresetDialog from "./import-preset-dialog";
 import TrackStatusIcon from "./track-status-icon";
 import TrackUpload from "./track-upload";
 
@@ -24,6 +26,10 @@ type TrackLibraryDrawerProps = {
   onAddTrack: (input: LocalTrackInput) => Promise<void>;
   onDeleteTrack: (track: Track) => Promise<void>;
   onEditTrack: (track: Track, input: LocalTrackUpdateInput) => Promise<void>;
+  onImportPreset: (
+    options: PresetImportOptions,
+    onProgress?: (progress: PresetImportProgress) => void,
+  ) => Promise<void>;
   onOpenChange?: (isOpen: boolean) => void;
 };
 
@@ -34,6 +40,7 @@ export default function TrackLibraryDrawer({
   onAddTrack,
   onDeleteTrack,
   onEditTrack,
+  onImportPreset,
   onOpenChange,
 }: TrackLibraryDrawerProps) {
   const [query, setQuery] = useState("");
@@ -124,6 +131,13 @@ export default function TrackLibraryDrawer({
                     kind={selectedKind}
                     onUpload={onAddTrack}
                   />
+
+                  <ImportPresetDialog onImportPreset={onImportPreset}>
+                    <Button size="sm" variant="outline" w="full">
+                      <DownloadIcon />
+                      Import preset
+                    </Button>
+                  </ImportPresetDialog>
 
                   <Stack>
                     <Box position="relative">
