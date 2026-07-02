@@ -1,11 +1,8 @@
-import { Box, Grid, Popover, Portal } from "@chakra-ui/react";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { Grid, Popover, Portal, Stack, Text } from "@chakra-ui/react";
+import { useState } from "react";
 
-import { resolveTrackIcon } from "~/sound/tracks";
-import DynamicIconButton from "~/ui/dynamic-icon-button";
-import Input from "~/ui/input";
-
-import type { IconName } from "lucide-react/dynamic";
+import { resolveTrackIcon, type TrackIconName } from "~/sound/track-icons";
+import TrackIconButton from "~/ui/track-icon-button";
 
 //------------------------------------------------------------------------------
 // Track Icon Picker
@@ -36,28 +33,70 @@ const iconButtonSizeByPickerSize: Record<TrackIconPickerSize, number> = {
 };
 
 const fallbackIcon = "music";
-const presetIcons = [
-  "music",
-  "drum",
-  "wind",
-  "cloud-rain",
-  "cloud",
-  "waves",
-  "flame",
-  "swords",
-  "shield",
-  "skull",
-  "castle",
-  "tent",
-  "trees",
-  "mountain",
-  "moon",
-  "sun",
-  "sparkles",
-  "ship",
-  "footprints",
-  "zap",
-] satisfies IconName[];
+const iconGroups = [
+  {
+    label: "Mood",
+    icons: ["music", "party-popper", "ghost", "skull", "eye", "smile", "frown", "heart"],
+  },
+  {
+    label: "Objects",
+    icons: [
+      "sword",
+      "swords",
+      "shield",
+      "anvil",
+      "bell",
+      "trophy",
+      "crown",
+      "gem",
+      "compass",
+      "scale",
+      "hourglass",
+      "telescope",
+      "flask-conical",
+      "wand",
+      "scroll",
+      "book-open",
+      "anchor",
+      "drama",
+      "palette",
+      "beer",
+      "utensils",
+      "footprints",
+      "paw-print",
+      "feather",
+    ],
+  },
+  {
+    label: "Buildings & Places",
+    icons: ["house", "store", "school", "hospital", "church", "castle", "tent", "flame-kindling"],
+  },
+  {
+    label: "Weather & Nature",
+    icons: [
+      "cloud",
+      "cloud-rain-wind",
+      "wind",
+      "waves",
+      "waves-vertical",
+      "leaf",
+      "tree-pine",
+      "trees",
+      "mountain",
+      "sun",
+      "moon",
+      "star",
+      "flame",
+      "snowflake",
+      "droplet",
+      "zap",
+    ],
+  },
+  {
+    label: "Animals",
+    icons: ["cat", "rabbit", "rat", "squirrel", "bird", "snail", "bug", "fish"],
+  },
+] satisfies { label: string; icons: TrackIconName[] }[];
 
 export default function TrackIconPicker({
   label,
@@ -66,51 +105,23 @@ export default function TrackIconPicker({
   onIconChange,
 }: TrackIconPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [customIcon, setCustomIcon] = useState(value);
   const selectedIcon = resolveTrackIcon(value) ?? fallbackIcon;
   const buttonSize = buttonSizeByPickerSize[size];
   const iconButtonSize = iconButtonSizeByPickerSize[size];
-
-  useEffect(() => {
-    setCustomIcon(value);
-  }, [value]);
 
   //------------------------------------------------------------------------------
   // Select Icon
   //------------------------------------------------------------------------------
 
   const selectIcon = (icon: string) => {
-    setCustomIcon(icon);
     onIconChange(icon);
-    setIsOpen(false);
-  };
-
-  //------------------------------------------------------------------------------
-  // Commit Custom Icon
-  //------------------------------------------------------------------------------
-
-  const commitCustomIcon = () => {
-    const icon = customIcon.trim();
-    if (!icon) return;
-
-    onIconChange(icon);
-  };
-
-  //------------------------------------------------------------------------------
-  // Handle Custom Icon Key Down
-  //------------------------------------------------------------------------------
-
-  const handleCustomIconKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter") return;
-
-    commitCustomIcon();
     setIsOpen(false);
   };
 
   return (
     <Popover.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
       <Popover.Trigger asChild>
-        <DynamicIconButton
+        <TrackIconButton
           aria-label={label}
           icon={selectedIcon}
           minW={iconButtonSize}
@@ -121,33 +132,31 @@ export default function TrackIconPicker({
       </Popover.Trigger>
       <Portal>
         <Popover.Positioner>
-          <Popover.Content p={3} w="15rem">
+          <Popover.Content maxW="calc(100vw - 2rem)" p={3} w="22rem">
             <Popover.Arrow>
               <Popover.ArrowTip />
             </Popover.Arrow>
-            <Grid gap={2} templateColumns="repeat(5, 1fr)">
-              {presetIcons.map((icon) => (
-                <DynamicIconButton
-                  key={icon}
-                  aria-label={`Select ${icon}`}
-                  icon={icon}
-                  onClick={() => selectIcon(icon)}
-                  size="xs"
-                  variant={selectedIcon === icon ? "solid" : "outline"}
-                />
+            <Stack gap={3} overflowY="auto" pr={1}>
+              {iconGroups.map((group) => (
+                <Stack key={group.label} gap={1}>
+                  <Text fontSize="xs" fontWeight="medium">
+                    {group.label}
+                  </Text>
+                  <Grid gap={2} templateColumns="repeat(auto-fill, minmax(2rem, 1fr))">
+                    {group.icons.map((icon) => (
+                      <TrackIconButton
+                        key={icon}
+                        aria-label={`Select ${icon}`}
+                        icon={icon}
+                        onClick={() => selectIcon(icon)}
+                        size="xs"
+                        variant={selectedIcon === icon ? "solid" : "outline"}
+                      />
+                    ))}
+                  </Grid>
+                </Stack>
               ))}
-            </Grid>
-            <Box mt={3}>
-              <Input
-                aria-label="Custom Lucide icon"
-                onBlur={commitCustomIcon}
-                onChange={(event) => setCustomIcon(event.currentTarget.value)}
-                onKeyDown={handleCustomIconKeyDown}
-                placeholder="Custom Lucide icon"
-                size="xs"
-                value={customIcon}
-              />
-            </Box>
+            </Stack>
           </Popover.Content>
         </Popover.Positioner>
       </Portal>

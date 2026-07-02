@@ -1,7 +1,7 @@
 import { Box, Portal, Tooltip } from "@chakra-ui/react";
 import { TriangleAlertIcon } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
 
+import { getTrackIconComponent } from "~/sound/track-icons";
 import type { Track } from "~/sound/tracks";
 
 //------------------------------------------------------------------------------
@@ -15,7 +15,8 @@ type TrackStatusIconProps = {
 
 export default function TrackStatusIcon({ track, size = 18 }: TrackStatusIconProps) {
   if (!track.hasMissingAudio) {
-    return <DynamicIcon name={track.icon} size={size} />;
+    const Icon = getTrackIconComponent(track.icon);
+    return <Icon size={size} />;
   }
 
   return (

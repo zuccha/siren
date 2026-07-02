@@ -1,8 +1,8 @@
 import { Box, Flex, Stack, Text } from "@chakra-ui/react";
 import { PlusIcon, SearchIcon } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
 import { useState } from "react";
 
+import { getTrackIconComponent } from "~/sound/track-icons";
 import type { Track } from "~/sound/tracks";
 import Button from "~/ui/button";
 import Input from "~/ui/input";
@@ -57,27 +57,31 @@ export default function ExistingTrackList({ tracks, onAddTrack }: ExistingTrackL
 
         {filteredTracks.length > 0 ? (
           <Flex gap={2} wrap="wrap">
-            {filteredTracks.map((track) => (
-              <Button
-                key={track.id}
-                aria-label={`Add ${track.name}`}
-                onClick={() => onAddTrack(track)}
-                size="xs"
-                variant="outline"
-              >
-                <PlusIcon />
-                <DynamicIcon name={track.icon} />
-                <Text
-                  as="span"
-                  maxW="10rem"
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                  whiteSpace="nowrap"
+            {filteredTracks.map((track) => {
+              const TrackIcon = getTrackIconComponent(track.icon);
+
+              return (
+                <Button
+                  key={track.id}
+                  aria-label={`Add ${track.name}`}
+                  onClick={() => onAddTrack(track)}
+                  size="xs"
+                  variant="outline"
                 >
-                  {track.name}
-                </Text>
-              </Button>
-            ))}
+                  <PlusIcon />
+                  <TrackIcon />
+                  <Text
+                    as="span"
+                    maxW="10rem"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    whiteSpace="nowrap"
+                  >
+                    {track.name}
+                  </Text>
+                </Button>
+              );
+            })}
           </Flex>
         ) : (
           <Text color="gray.500" fontSize="sm">

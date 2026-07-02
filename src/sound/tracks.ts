@@ -1,4 +1,4 @@
-import { dynamicIconImports, type IconName } from "lucide-react/dynamic";
+import { resolveTrackIcon, type TrackIconName } from "./track-icons";
 
 //------------------------------------------------------------------------------
 // Track Kind
@@ -27,7 +27,7 @@ export type Track = {
   kind: TrackKind;
   name: string;
   src: string;
-  icon: IconName;
+  icon: TrackIconName;
   initialVolume: number;
   fileName: string;
   hasMissingAudio: boolean;
@@ -59,8 +59,6 @@ export type TrackInput = {
   hasMissingAudio?: boolean;
 };
 
-const iconImportByName = dynamicIconImports as Record<string, unknown>;
-
 //------------------------------------------------------------------------------
 // Create Track
 //------------------------------------------------------------------------------
@@ -84,49 +82,4 @@ export function createTrack(track: TrackInput, kind: TrackKind, fallbackIcon: Tr
 
 function getTrackIcon(icon: string, fallbackIcon: string) {
   return resolveTrackIcon(icon) ?? resolveTrackIcon(fallbackIcon) ?? "music";
-}
-
-//------------------------------------------------------------------------------
-// Resolve Track Icon
-//------------------------------------------------------------------------------
-
-export function resolveTrackIcon(icon: string) {
-  const normalizedIcon = normalizeTrackIconName(icon);
-  return findIconName(normalizedIcon);
-}
-
-//------------------------------------------------------------------------------
-// Normalize Track Icon Name
-//------------------------------------------------------------------------------
-
-function normalizeTrackIconName(icon: string) {
-  return icon.trim().replace(/Icon$/, "");
-}
-
-//------------------------------------------------------------------------------
-// Find Icon Name
-//------------------------------------------------------------------------------
-
-function findIconName(icon: string): IconName | undefined {
-  const candidates = [icon, toKebabCase(icon)];
-  return candidates.find(isIconName);
-}
-
-//------------------------------------------------------------------------------
-// Is Icon Name
-//------------------------------------------------------------------------------
-
-function isIconName(icon: string): icon is IconName {
-  return icon in iconImportByName;
-}
-
-//------------------------------------------------------------------------------
-// To Kebab Case
-//------------------------------------------------------------------------------
-
-function toKebabCase(value: string) {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .replace(/[\s_]+/g, "-")
-    .toLowerCase();
 }

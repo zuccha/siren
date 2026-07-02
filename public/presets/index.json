@@ -78,9 +78,9 @@
     },
     {
       "id": "d90d11fc-04b7-4fa5-89f0-7fdefcd2bfd1",
-      "name": "Mistery",
+      "name": "Mystery",
       "type": "ambience",
-      "icon": "hat-glasses",
+      "icon": "eye",
       "defaultVolume": 50,
       "file": "ambience/Alexander Nakarada - Skeleton Keys.mp3"
     },
@@ -168,7 +168,7 @@
       "id": "5ee97958-38de-46e1-a3fe-d099cc9ed3b4",
       "name": "Village",
       "type": "environment",
-      "icon": "shop",
+      "icon": "store",
       "defaultVolume": 55,
       "file": "environment/Ramon Mineiro - Village.mp3"
     }

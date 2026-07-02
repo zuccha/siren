@@ -2,20 +2,23 @@ import {
   IconButton as ChakraIconButton,
   type IconButtonProps as ChakraIconButtonProps,
 } from "@chakra-ui/react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+
+import { getTrackIconComponent, type TrackIconName } from "~/sound/track-icons";
 
 //------------------------------------------------------------------------------
-// Dynamic Icon Button
+// Track Icon Button
 //------------------------------------------------------------------------------
 
-type DynamicIconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> & {
-  icon: IconName;
+type TrackIconButtonProps = Omit<ChakraIconButtonProps, "children" | "_icon"> & {
+  icon: TrackIconName;
 };
 
-export default function DynamicIconButton({ icon, size, ...rest }: DynamicIconButtonProps) {
+export default function TrackIconButton({ icon, size, ...rest }: TrackIconButtonProps) {
+  const Icon = getTrackIconComponent(icon);
+
   return (
     <ChakraIconButton colorPalette="accent" {...rest} size={size}>
-      <DynamicIcon name={icon} />
+      <Icon />
     </ChakraIconButton>
   );
 }
