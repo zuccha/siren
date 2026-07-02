@@ -97,7 +97,7 @@ export default function TrackUpload({ kind, defaultIcon, onUpload }: TrackUpload
         <AudioFileUpload resetKey={fileUploadKey} file={file} onFileChange={selectFile} />
         <HStack gap={0.5}>
           <VolumeSlider
-            aria-label="Initial volume"
+            aria-label="Default volume"
             value={initialVolume}
             onValueChange={setInitialVolume}
           />

@@ -1,4 +1,4 @@
-import { Dialog, Grid, Portal, Stack, Text } from "@chakra-ui/react";
+import { Dialog, Grid, HStack, Portal, Stack, Text } from "@chakra-ui/react";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import type { LocalTrackUpdateInput } from "~/sound/local-tracks";
@@ -6,6 +6,7 @@ import type { Track } from "~/sound/tracks";
 import AudioFileUpload from "~/ui/audio-file-upload";
 import Button from "~/ui/button";
 import Input from "~/ui/input";
+import VolumeSlider from "~/ui/volume-slider";
 
 import TrackIconPicker from "./track-icon-picker";
 
@@ -22,6 +23,7 @@ type EditTrackDialogProps = {
 export default function EditTrackDialog({ track, onCancel, onEditTrack }: EditTrackDialogProps) {
   const [draftName, setDraftName] = useState("");
   const [draftIcon, setDraftIcon] = useState("music");
+  const [draftInitialVolume, setDraftInitialVolume] = useState(50);
   const [file, setFile] = useState<File>();
   const [fileUploadKey, setFileUploadKey] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -30,6 +32,7 @@ export default function EditTrackDialog({ track, onCancel, onEditTrack }: EditTr
   useEffect(() => {
     setDraftName(track?.name ?? "");
     setDraftIcon(track?.icon ?? "music");
+    setDraftInitialVolume(track?.initialVolume ?? 50);
     setFile(undefined);
     setFileUploadKey((current) => current + 1);
   }, [track]);
@@ -47,7 +50,7 @@ export default function EditTrackDialog({ track, onCancel, onEditTrack }: EditTr
       await onEditTrack(track, {
         name: nextName,
         icon: draftIcon,
-        initialVolume: track.initialVolume,
+        initialVolume: draftInitialVolume,
         file,
       });
       onCancel();
@@ -95,6 +98,25 @@ export default function EditTrackDialog({ track, onCancel, onEditTrack }: EditTr
                     Current file: {track?.fileName}
                   </Text>
                   <AudioFileUpload resetKey={fileUploadKey} file={file} onFileChange={setFile} />
+                </Stack>
+                <Stack gap={1}>
+                  <Text fontSize="sm">Default volume</Text>
+                  <HStack gap={0.5}>
+                    <VolumeSlider
+                      aria-label="Default volume"
+                      value={draftInitialVolume}
+                      onValueChange={setDraftInitialVolume}
+                    />
+                    <Text
+                      color="fg.muted"
+                      fontSize="xs"
+                      fontVariantNumeric="tabular-nums"
+                      minW="3ch"
+                      textAlign="right"
+                    >
+                      {draftInitialVolume}
+                    </Text>
+                  </HStack>
                 </Stack>
               </Stack>
             </Dialog.Body>

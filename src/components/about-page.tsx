@@ -151,9 +151,9 @@ export default function AboutPage({ onClose }: AboutPageProps) {
                     playlist, and change track details.
                   </Text>
                   <Text>
-                    Track name, icon, audio file, and track type belong to the track itself. Volume
-                    belongs to the playlist, so the same sound can be balanced differently depending
-                    on where it is used.
+                    Track name, icon, audio file, track type, and default volume belong to the track
+                    itself. Playlist volume can still be tuned independently, so the same sound can
+                    be balanced differently depending on where it is used.
                   </Text>
                 </DocsSection>
 
